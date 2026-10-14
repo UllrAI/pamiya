@@ -1,0 +1,8 @@
+erDiagram
+  WORKER |o--o{ ATTEMPT : executes
+  AGENT_ENDPOINT |o--o{ ATTEMPT : accepts
+  WORKER |o--o{ CAPABILITY_BINDING : advertises
+  AGENT_ENDPOINT |o--o{ CAPABILITY_BINDING : offers
+  CAPABILITY ||--o{ CAPABILITY_BINDING : defines
+  WORKER ||--o{ ENVIRONMENT : hosts
+  DEVICE |o--o{ CAPABILITY_BINDING : targets

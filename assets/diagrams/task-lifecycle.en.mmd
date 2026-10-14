@@ -1,0 +1,12 @@
+flowchart TB
+  P[PENDING] -->|Assign Attempt| A[ACTIVE]
+  P -->|Expired before start| E[EXPIRED]
+  A -->|Confirmed result| DONE["SUCCEEDED / FAILED"]
+  A -->|Request cancel| C[CANCEL_REQUESTED]
+  A -->|Uncertain effect or timeout| R[RECONCILING]
+  C -->|Confirmed stop| STOP[CANCELED]
+  C -->|Confirmed result| DONE
+  C -->|Stop or effect unresolved| R
+  R -->|Confirmed result| DONE
+  R -->|Confirmed stop| STOP
+  R -->|Reconciled safe retry| P

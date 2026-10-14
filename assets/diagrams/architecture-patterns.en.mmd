@@ -1,0 +1,17 @@
+flowchart TB
+  subgraph A[Integrated]
+    A1[Harness + Execution + local State]
+  end
+  subgraph B[State separated]
+    B1[Harness + Execution] <--> B2[Durable State]
+  end
+  subgraph C[Execution separated]
+    C1[Harness + State] --> C2[Remote Execution]
+  end
+  subgraph D[Three-way separation]
+    D1[Harness] <--> D2[Durable State]
+    D1 --> D3[Heterogeneous Execution]
+  end
+  A ~~~ B
+  B ~~~ C
+  C ~~~ D

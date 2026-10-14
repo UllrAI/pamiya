@@ -1,0 +1,5 @@
+flowchart LR
+  S[事件 Source] --> T["可选 Tenon<br/>转换 · 过滤 · 聚合"]
+  T --> K[规范化事件]
+  K --> E["平台<br/>持久化 · 规则"]
+  E --> R[Run]

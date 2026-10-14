@@ -1,0 +1,9 @@
+erDiagram
+  direction LR
+  TENANT ||--o{ PERSONAL_AGENT : 拥有
+  PERSONAL_AGENT ||--o{ SESSION : 关联
+  SESSION ||--o{ RUN : 启动
+  RUN ||--o{ TASK : 创建
+  TASK ||--o{ ATTEMPT : 调度
+  TASK ||--o{ ARTIFACT : 产出
+  TASK ||--o| DELEGATION : 委托

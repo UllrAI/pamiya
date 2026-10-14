@@ -1,0 +1,12 @@
+flowchart TB
+  P[PENDING] -->|分配 Attempt| A[ACTIVE]
+  P -->|期限已过且未开始| E[EXPIRED]
+  A -->|结果已确认| DONE["SUCCEEDED / FAILED"]
+  A -->|请求取消| C[CANCEL_REQUESTED]
+  A -->|效果未知或超时| R[RECONCILING]
+  C -->|已确认停止| STOP[CANCELED]
+  C -->|结果已确认| DONE
+  C -->|停止或效果未明| R
+  R -->|结果已确认| DONE
+  R -->|已确认停止| STOP
+  R -->|核对后安全重试| P

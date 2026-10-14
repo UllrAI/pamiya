@@ -1,0 +1,30 @@
+sequenceDiagram
+  participant H as Harness
+  participant DB as PostgreSQL
+  participant S as Dispatcher
+  participant M as MQTT Broker
+  participant W as Worker
+  participant O as 对象存储
+  participant I as Result Ingest
+  H->>DB: 创建 Task 工具关联与 action_id
+  S->>DB: 提交 Attempt 与设备占用
+  S->>M: EXECUTE QoS 1 Retain false 有效期
+  M->>W: 命令 可能重复
+  W->>W: 检查身份范围 期限 取消与去重记录
+  W->>M: ACCEPTED
+  M->>I: 接单事件
+  I->>DB: 持久化接单
+  W->>W: 执行并保存结果
+  opt 大结果
+    W->>O: HTTPS 上传独立 key 的对象
+  end
+  W->>M: COMPLETED event_id 与结果或引用
+  M->>I: 终态事件 可能重复
+  opt 产物引用
+    I->>O: 校验上传对象与摘要
+  end
+  I->>DB: 结果去重 归属核验 状态 原子提交
+  I->>M: RESULT_ACK
+  M->>W: 确认持久化处理
+  H->>DB: 读取已提交结果与检查点
+  H->>H: 继续任务或判断目标完成

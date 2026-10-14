@@ -1,0 +1,11 @@
+flowchart TB
+  IN["用户输入 · 事件"] --> CP["Control Plane<br/>Harness · 任务运行时"]
+  CP <--> SP[("State Plane<br/>PostgreSQL")]
+  CP <-->|命令与结果| MQ[MQTT Broker]
+  CP <-->|目标与任务状态| AD[Agent Adapter]
+  MQ <--> SW["软件 Worker<br/>云端 · 桌面 · Edge"]
+  MQ <--> IW["嵌入式 Worker<br/>感知 · HID · GPIO"]
+  AD <--> AR["专业 Agent<br/>独立 Harness 与状态"]
+  SW -.-> OBJ[("对象存储<br/>HTTPS 文件与产物")]
+  IW -.-> OBJ
+  AR -.-> OBJ

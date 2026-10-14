@@ -1,0 +1,21 @@
+flowchart TB
+  IN["User inputs<br/>Web · App · IM"] --> CP
+  EV["Event sources<br/>Webhook · Cron · Devices"] --> CP
+  TN["Optional Tenon<br/>Event transformation"] -.-> EV
+  subgraph PLATFORM["Platform · Logical layers"]
+    CP["Control Plane<br/>Personal Agent · Harness<br/>Task Runtime · Event Engine"]
+    CF["Capability layer<br/>Registry · Resolver · Router<br/>Scheduler · Dispatcher"]
+    SP[("State Plane<br/>Session · Run · Task · Event<br/>Checkpoints · Memory · Skills")]
+    CP <--> CF
+    CP <--> SP
+  end
+  CF <-->|Commands · Results · Events| MQ[MQTT Broker]
+  CF <-->|Tools · Goals · Task state| API[HTTP · MCP · A2A]
+  MQ <--> SW["Software Worker<br/>Cloud · Desktop · Edge"]
+  MQ <--> IW["Embedded Worker<br/>HID · GPIO · Observations"]
+  API <--> AR["Agent Runtime<br/>Own harness and state"]
+  API <--> EXT["External tools<br/>Business APIs"]
+  SW -.-> OBJ[("Object storage<br/>Authorized HTTPS data path")]
+  IW -.-> OBJ
+  AR -.-> OBJ
+  CP -.->|References and access| OBJ

@@ -1,0 +1,30 @@
+sequenceDiagram
+  participant H as Harness
+  participant DB as PostgreSQL
+  participant S as Dispatcher
+  participant M as MQTT Broker
+  participant W as Worker
+  participant O as Object storage
+  participant I as Result Ingest
+  H->>DB: Commit Task, tool correlation, action_id
+  S->>DB: Commit Attempt and device occupancy
+  S->>M: EXECUTE · QoS 1 · No retain · Validity
+  M->>W: Command · May repeat
+  W->>W: Validate scope, deadline, cancellation, deduplication
+  W->>M: ACCEPTED
+  M->>I: Acceptance event
+  I->>DB: Persist acceptance
+  W->>W: Execute and record result
+  opt Large result
+    W->>O: HTTPS upload with unique object key
+  end
+  W->>M: COMPLETED · event_id · output or reference
+  M->>I: Terminal event · May repeat
+  opt Artifact reference
+    I->>O: Validate object and digest
+  end
+  I->>DB: Commit result dedupe, assignment check and state
+  I->>M: RESULT_ACK
+  M->>W: Acknowledge committed handling
+  H->>DB: Read committed result and checkpoint
+  H->>H: Continue or assess goal completion

@@ -1,0 +1,11 @@
+flowchart TB
+  IN["User inputs · Events"] --> CP["Control Plane<br/>Harness · Task Runtime"]
+  CP <--> SP[("State Plane<br/>PostgreSQL")]
+  CP <-->|Commands and results| MQ[MQTT Broker]
+  CP <-->|Goals and task state| AD[Agent Adapter]
+  MQ <--> SW["Software Workers<br/>Cloud · Desktop · Edge"]
+  MQ <--> IW["Embedded Workers<br/>Sensors · HID · GPIO"]
+  AD <--> AR["Specialist Agents<br/>Own harness and state"]
+  SW -.-> OBJ[("Object storage<br/>HTTPS files and artifacts")]
+  IW -.-> OBJ
+  AR -.-> OBJ

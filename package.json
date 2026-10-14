@@ -1,0 +1,15 @@
+{
+  "name": "pamiya-architecture",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Documentation tooling for the Pamiya architecture proposal",
+  "type": "module",
+  "scripts": {
+    "docs:check": "python3 scripts/check_docs.py",
+    "diagrams:render": "node scripts/render_diagrams.mjs"
+  },
+  "devDependencies": {
+    "mermaid": "11.17.2",
+    "playwright": "1.62.1"
+  }
+}

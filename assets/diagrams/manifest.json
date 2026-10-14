@@ -1,0 +1,164 @@
+[
+  {
+    "name": "architecture-patterns",
+    "locale": "zh-CN",
+    "document": "docs/zh-CN/architecture-patterns.md",
+    "source": "architecture-patterns.zh-CN.mmd",
+    "svg": "architecture-patterns.zh-CN.svg",
+    "png": "architecture-patterns.zh-CN.png"
+  },
+  {
+    "name": "architecture-patterns",
+    "locale": "en",
+    "document": "docs/en/architecture-patterns.md",
+    "source": "architecture-patterns.en.mmd",
+    "svg": "architecture-patterns.en.svg",
+    "png": "architecture-patterns.en.png"
+  },
+  {
+    "name": "platform-overview",
+    "locale": "zh-CN",
+    "document": "docs/zh-CN/platform-architecture.md",
+    "source": "platform-overview.zh-CN.mmd",
+    "svg": "platform-overview.zh-CN.svg",
+    "png": "platform-overview.zh-CN.png"
+  },
+  {
+    "name": "platform-overview",
+    "locale": "en",
+    "document": "docs/en/platform-architecture.md",
+    "source": "platform-overview.en.mmd",
+    "svg": "platform-overview.en.svg",
+    "png": "platform-overview.en.png"
+  },
+  {
+    "name": "domain-model",
+    "locale": "zh-CN",
+    "document": "docs/zh-CN/platform-architecture.md",
+    "source": "domain-model.zh-CN.mmd",
+    "svg": "domain-model.zh-CN.svg",
+    "png": "domain-model.zh-CN.png"
+  },
+  {
+    "name": "domain-model",
+    "locale": "en",
+    "document": "docs/en/platform-architecture.md",
+    "source": "domain-model.en.mmd",
+    "svg": "domain-model.en.svg",
+    "png": "domain-model.en.png"
+  },
+  {
+    "name": "event-activation",
+    "locale": "zh-CN",
+    "document": "docs/zh-CN/platform-architecture.md",
+    "source": "event-activation.zh-CN.mmd",
+    "svg": "event-activation.zh-CN.svg",
+    "png": "event-activation.zh-CN.png"
+  },
+  {
+    "name": "event-activation",
+    "locale": "en",
+    "document": "docs/en/platform-architecture.md",
+    "source": "event-activation.en.mmd",
+    "svg": "event-activation.en.svg",
+    "png": "event-activation.en.png"
+  },
+  {
+    "name": "execution-sequence",
+    "locale": "zh-CN",
+    "document": "docs/zh-CN/reliability.md",
+    "source": "execution-sequence.zh-CN.mmd",
+    "svg": "execution-sequence.zh-CN.svg",
+    "png": "execution-sequence.zh-CN.png"
+  },
+  {
+    "name": "execution-sequence",
+    "locale": "en",
+    "document": "docs/en/reliability.md",
+    "source": "execution-sequence.en.mmd",
+    "svg": "execution-sequence.en.svg",
+    "png": "execution-sequence.en.png"
+  },
+  {
+    "name": "task-lifecycle",
+    "locale": "zh-CN",
+    "document": "docs/zh-CN/reliability.md",
+    "source": "task-lifecycle.zh-CN.mmd",
+    "svg": "task-lifecycle.zh-CN.svg",
+    "png": "task-lifecycle.zh-CN.png"
+  },
+  {
+    "name": "task-lifecycle",
+    "locale": "en",
+    "document": "docs/en/reliability.md",
+    "source": "task-lifecycle.en.mmd",
+    "svg": "task-lifecycle.en.svg",
+    "png": "task-lifecycle.en.png"
+  },
+  {
+    "name": "event-integration",
+    "locale": "zh-CN",
+    "document": "docs/zh-CN/technology-and-roadmap.md",
+    "source": "event-integration.zh-CN.mmd",
+    "svg": "event-integration.zh-CN.svg",
+    "png": "event-integration.zh-CN.png"
+  },
+  {
+    "name": "event-integration",
+    "locale": "en",
+    "document": "docs/en/technology-and-roadmap.md",
+    "source": "event-integration.en.mmd",
+    "svg": "event-integration.en.svg",
+    "png": "event-integration.en.png"
+  },
+  {
+    "name": "baseline-architecture",
+    "locale": "en",
+    "document": "README.md",
+    "source": "baseline-architecture.en.mmd",
+    "svg": "baseline-architecture.en.svg",
+    "png": "baseline-architecture.en.png"
+  },
+  {
+    "name": "baseline-architecture",
+    "locale": "zh-CN",
+    "document": "README.zh-CN.md",
+    "source": "baseline-architecture.zh-CN.mmd",
+    "svg": "baseline-architecture.zh-CN.svg",
+    "png": "baseline-architecture.zh-CN.png"
+  },
+  {
+    "name": "execution-model",
+    "locale": "en",
+    "document": "docs/en/platform-architecture.md",
+    "source": "execution-model.en.mmd",
+    "svg": "execution-model.en.svg",
+    "png": "execution-model.en.png"
+  },
+  {
+    "name": "execution-model",
+    "locale": "zh-CN",
+    "document": "docs/zh-CN/platform-architecture.md",
+    "source": "execution-model.zh-CN.mmd",
+    "svg": "execution-model.zh-CN.svg",
+    "png": "execution-model.zh-CN.png"
+  },
+  {
+    "name": "readable-overview",
+    "locale": "en",
+    "document": "README.md",
+    "renderer": "svg",
+    "source": "../../scripts/render_readable_architecture.py",
+    "svg": "readable-overview.en.svg",
+    "png": "readable-overview.en.png"
+  },
+  {
+    "name": "readable-overview",
+    "locale": "zh-CN",
+    "document": "README.zh-CN.md",
+    "renderer": "svg",
+    "source": "../../scripts/render_readable_architecture.py",
+    "svg": "readable-overview.zh-CN.svg",
+    "png": "readable-overview.zh-CN.png"
+  }
+]

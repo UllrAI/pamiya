@@ -1,0 +1,21 @@
+flowchart TB
+  IN["用户输入<br/>Web · App · IM"] --> CP
+  EV["事件源<br/>Webhook · Cron · 设备"] --> CP
+  TN["可选 Tenon<br/>事件转换"] -.-> EV
+  subgraph PLATFORM["平台逻辑层"]
+    CP["Control Plane<br/>Personal Agent · Harness<br/>任务运行时 · 事件引擎"]
+    CF["能力层<br/>注册 · 发现 · 路由<br/>调度 · 投递"]
+    SP[("State Plane<br/>Session · Run · Task · Event<br/>检查点 · Memory · Skills")]
+    CP <--> CF
+    CP <--> SP
+  end
+  CF <-->|命令 · 结果 · 事件| MQ[MQTT Broker]
+  CF <-->|工具 · 目标 · 任务状态| API[HTTP · MCP · A2A]
+  MQ <--> SW["软件 Worker<br/>云端 · 桌面 · Edge"]
+  MQ <--> IW["嵌入式 Worker<br/>HID · GPIO · 感知"]
+  API <--> AR["Agent Runtime<br/>独立 Harness 与状态"]
+  API <--> EXT["外部工具<br/>业务 API"]
+  SW -.-> OBJ[("对象存储<br/>授权 HTTPS 数据通道")]
+  IW -.-> OBJ
+  AR -.-> OBJ
+  CP -.->|产物索引与授权| OBJ

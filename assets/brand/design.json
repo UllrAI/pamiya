@@ -1,0 +1,30 @@
+{
+  "name": "Pamiya",
+  "baseline": "0.1",
+  "palette": {
+    "ink": "#101A20",
+    "surface": "#F4F7F8",
+    "teal": "#2D827B",
+    "mint": "#87EDD8",
+    "amber": "#FFA957",
+    "muted": "#66837F"
+  },
+  "typography": {
+    "latin": "Inter, system-ui, sans-serif",
+    "cjk": "Noto Sans CJK SC, PingFang SC, sans-serif"
+  },
+  "direction": "Minimal flat infrastructure graphics. One durable intent reaches many execution environments.",
+  "illustration": "Dark panoramic header, precise routing lines, restrained mint and amber accents.",
+  "banner": {
+    "width": 1600,
+    "height": 400,
+    "aspect_ratio": "4:1"
+  },
+  "social_preview": {
+    "width": 1280,
+    "height": 640,
+    "aspect_ratio": "2:1"
+  },
+  "diagrams": "Editable Mermaid, neutral light surfaces, literal responsibilities and readable labels.",
+  "status": "Architecture proposal; no production runtime included."
+}

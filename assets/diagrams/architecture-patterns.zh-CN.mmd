@@ -1,0 +1,17 @@
+flowchart TB
+  subgraph A[一体式]
+    A1[Harness + Execution + 本地 State]
+  end
+  subgraph B[状态分离式]
+    B1[Harness + Execution] <--> B2[持久化 State]
+  end
+  subgraph C[执行分离式]
+    C1[Harness + State] --> C2[远程 Execution]
+  end
+  subgraph D[三层分离式]
+    D1[Harness] <--> D2[持久化 State]
+    D1 --> D3[异构 Execution]
+  end
+  A ~~~ B
+  B ~~~ C
+  C ~~~ D

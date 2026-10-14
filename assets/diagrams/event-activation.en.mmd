@@ -1,0 +1,8 @@
+flowchart TB
+  E[Trusted event source] --> P[Durable ingestion and deduplication]
+  P --> F[Subscriptions · Rules · Cooldown]
+  F --> A[Authorization and limit checks]
+  A --> R[Create Run or enqueue Session input]
+  R --> H[Activate harness on demand]
+  H --> S[Persist Tasks and state]
+  S --> I[Wait for event · Release compute]

@@ -1,0 +1,8 @@
+flowchart TB
+  E[可信事件源] --> P[持久化接入与去重]
+  P --> F[订阅 · 规则 · 冷却]
+  F --> A[授权与额度检查]
+  A --> R[创建 Run 或入 Session Mailbox]
+  R --> H[按需唤醒 Harness]
+  H --> S[持久化任务与状态]
+  S --> I[等待事件 · 释放计算]

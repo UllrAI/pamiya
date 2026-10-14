@@ -1,0 +1,9 @@
+erDiagram
+  direction LR
+  TENANT ||--o{ PERSONAL_AGENT : owns
+  PERSONAL_AGENT ||--o{ SESSION : has
+  SESSION ||--o{ RUN : starts
+  RUN ||--o{ TASK : creates
+  TASK ||--o{ ATTEMPT : schedules
+  TASK ||--o{ ARTIFACT : produces
+  TASK ||--o| DELEGATION : delegates

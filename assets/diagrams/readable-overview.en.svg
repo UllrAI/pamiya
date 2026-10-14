@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1240" viewBox="0 0 1500 1240" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">Pamiya architecture at a glance</title>
+<desc id="diagram-desc">Control reads durable state, routes Worker messages through MQTT, delegates via adapters, and uses HTTPS for artifacts.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#66837F" stroke-width="1.7" stroke-linejoin="round"/></marker></defs>
+<style>text{font-family:Inter,"Noto Sans CJK SC","PingFang SC",Arial,sans-serif;fill:#101A20}.muted{fill:#5B6872}.link{fill:#66837F}</style>
+<rect width="1500" height="1240" fill="#FBFCFD"/>
+<rect x="16" y="16" width="1468" height="1208" rx="26" fill="none" stroke="#DDE3E7" stroke-width="2"/>
+<text x="1428" y="52" font-size="19" font-weight="400" text-anchor="end" class="muted" data-label="status">Architecture proposal · 0.1</text>
+<g transform="translate(464 86)" fill="none" stroke="#2D827B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="-15" y="-12" width="30" height="24" rx="5"/><path d="M-7 -4 0 2-7 8M5 8h5"/></g>
+<text x="782" y="100" font-size="40" font-weight="650" text-anchor="middle" class="" data-label="title">Agent Gateway / API</text>
+<text x="750" y="146" font-size="26" font-weight="400" text-anchor="middle" class="muted" data-label="inputs">Chat · Web · App · Schedules · External events</text>
+<path d="M750 160V178" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect data-card="control" x="56" y="192" width="1388" height="156" rx="16" fill="#EAF4F2" stroke="#A0C8C1" stroke-width="2"/>
+<g transform="translate(584 229)" fill="none" stroke="#2D827B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="0" cy="0" r="9"/><path d="M-16 -8h6M-16 8h6M10-8h6M10 8h6M-8-16v6M8-16v6M-8 10v6M8 10v6"/></g>
+<text x="775" y="242" font-size="40" font-weight="650" text-anchor="middle" class="" data-label="control">Control Plane</text>
+<text x="750" y="288" font-size="28" font-weight="400" text-anchor="middle" class="" data-label="harness">Personal Agent · Harness · Task Runtime · Event Engine</text>
+<text x="750" y="324" font-size="24" font-weight="400" text-anchor="middle" class="muted" data-label="routing">Capability discovery · Routing · Authorization · Scheduling</text>
+<path d="M269 362V424" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<path d="M839 362V424" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<path d="M1307 362V424" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="101" y="381" width="336" height="30" fill="#FBFCFD"/>
+<text x="269" y="404" font-size="22" font-weight="400" text-anchor="middle" class="link" data-label="state_link">Durable reads / writes</text>
+<rect x="671" y="381" width="336" height="30" fill="#FBFCFD"/>
+<text x="839" y="404" font-size="22" font-weight="400" text-anchor="middle" class="link" data-label="worker_link">Commands / Results / Events</text>
+<rect x="1139" y="381" width="336" height="30" fill="#FBFCFD"/>
+<text x="1307" y="404" font-size="22" font-weight="400" text-anchor="middle" class="link" data-label="agent_link">Tools / Delegation</text>
+<rect data-card="state" x="56" y="438" width="426" height="230" rx="16" fill="#FBFCFD" stroke="#DDE3E7" stroke-width="2"/>
+<g transform="translate(147 481)" fill="none" stroke="#2D827B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="0" cy="-10" rx="12" ry="5"/><path d="M-12-10v20c0 7 24 7 24 0v-20M-12 0c0 7 24 7 24 0"/></g>
+<text x="291" y="494" font-size="36" font-weight="650" text-anchor="middle" class="" data-label="state">State Plane</text>
+<text x="269" y="539" font-size="28" font-weight="400" text-anchor="middle" class="" data-label="database">PostgreSQL</text>
+<text x="269" y="578" font-size="24" font-weight="400" text-anchor="middle" class="muted" data-label="records">Session · Run · Task · Event</text>
+<text x="269" y="611" font-size="23" font-weight="400" text-anchor="middle" class="muted" data-label="memory">Checkpoints · Memory · Skills</text>
+<text x="269" y="644" font-size="23" font-weight="400" text-anchor="middle" class="muted" data-label="references">Artifact references</text>
+<rect data-card="mqtt" x="528" y="438" width="622" height="180" rx="16" fill="#EDF2FC" stroke="#AABFEF" stroke-width="2"/>
+<g transform="translate(670 483)" fill="none" stroke="#3869C7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="-5" y="-15" width="10" height="10" rx="2"/><rect x="-17" y="5" width="10" height="10" rx="2"/><rect x="7" y="5" width="10" height="10" rx="2"/><path d="M0-5v6M-12 5v-4h24v4"/></g>
+<text x="868" y="496" font-size="38" font-weight="650" text-anchor="middle" class="" data-label="broker">MQTT Broker</text>
+<text x="839" y="542" font-size="26" font-weight="400" text-anchor="middle" class="muted" data-label="messages">Commands · Results · Events · Presence</text>
+<text x="839" y="582" font-size="23" font-weight="400" text-anchor="middle" class="muted" data-label="connectivity">Long-lived connections · Pub/Sub · Topic ACLs</text>
+<rect data-card="apis" x="1170" y="438" width="274" height="180" rx="16" fill="#FFF7E9" stroke="#E8D3B1" stroke-width="2"/>
+<text x="1307" y="483" font-size="28" font-weight="650" text-anchor="middle" class="" data-label="apis">Tool &amp; Agent APIs</text>
+<text x="1307" y="530" font-size="26" font-weight="400" text-anchor="middle" class="" data-label="protocols">HTTP · MCP · A2A</text>
+<text x="1307" y="573" font-size="22" font-weight="400" text-anchor="middle" class="muted" data-label="adapters">Tools · Agent Adapter</text>
+<path d="M839 632V720M186 720H1032" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round"/>
+<rect x="291" y="674" width="700" height="34" fill="#FBFCFD"/>
+<text x="641" y="700" font-size="23" font-weight="400" text-anchor="middle" class="link" data-label="workers">Workers connect outbound · Bidirectional messaging</text>
+<path d="M186 720V756" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<path d="M468 720V756" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<path d="M750 720V756" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<path d="M1032 720V756" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<path d="M1307 632V756" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="1187" y="674" width="240" height="34" fill="#FBFCFD"/>
+<text x="1307" y="700" font-size="22" font-weight="400" text-anchor="middle" class="link" data-label="remote">Remote task state</text>
+<rect data-card="cloud" x="56" y="770" width="260" height="158" rx="16" fill="#FBFCFD" stroke="#DDE3E7" stroke-width="2"/>
+<g transform="translate(186 806)" fill="none" stroke="#5B6872" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M-11 12h23a8 8 0 0 0 1-16 13 13 0 0 0-25-3 10 10 0 0 0 1 19Z"/></g>
+<text x="186" y="857" font-size="26" font-weight="600" text-anchor="middle" class="" data-label="cloud">Cloud Worker</text>
+<text x="186" y="895" font-size="21" font-weight="400" text-anchor="middle" class="muted" data-label="cloud_desc">Sandbox · Tools</text>
+<rect data-card="desktop" x="338" y="770" width="260" height="158" rx="16" fill="#FBFCFD" stroke="#DDE3E7" stroke-width="2"/>
+<g transform="translate(468 806)" fill="none" stroke="#5B6872" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="-17" y="-13" width="34" height="23" rx="3"/><path d="M0 10v7M-8 17h16"/></g>
+<text x="468" y="857" font-size="26" font-weight="600" text-anchor="middle" class="" data-label="desktop">Desktop Worker</text>
+<text x="468" y="895" font-size="21" font-weight="400" text-anchor="middle" class="muted" data-label="desktop_desc">macOS · Windows</text>
+<rect data-card="edge" x="620" y="770" width="260" height="158" rx="16" fill="#FBFCFD" stroke="#DDE3E7" stroke-width="2"/>
+<g transform="translate(750 806)" fill="none" stroke="#5B6872" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="-14" y="-16" width="28" height="32" rx="3"/><path d="M-14-5h28M-14 5h28M-7-10h3M-7 0h3M-7 10h3"/></g>
+<text x="750" y="857" font-size="26" font-weight="600" text-anchor="middle" class="" data-label="edge">Enterprise Edge</text>
+<text x="750" y="895" font-size="21" font-weight="400" text-anchor="middle" class="muted" data-label="edge_desc">Internal systems</text>
+<rect data-card="device" x="902" y="770" width="260" height="158" rx="16" fill="#FBFCFD" stroke="#DDE3E7" stroke-width="2"/>
+<g transform="translate(1032 806)" fill="none" stroke="#5B6872" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="-11" y="-11" width="22" height="22" rx="3"/><rect x="-5" y="-5" width="10" height="10" rx="1"/><path d="M-17-6h6M-17 6h6M11-6h6M11 6h6M-6-17v6M6-17v6M-6 11v6M6 11v6"/></g>
+<text x="1032" y="857" font-size="26" font-weight="600" text-anchor="middle" class="" data-label="device">Device Worker</text>
+<text x="1032" y="895" font-size="21" font-weight="400" text-anchor="middle" class="muted" data-label="device_desc">ESP32 · HID · GPIO</text>
+<rect data-card="agent" x="1184" y="770" width="260" height="158" rx="16" fill="#FBFCFD" stroke="#DDE3E7" stroke-width="2"/>
+<g transform="translate(1314 806)" fill="none" stroke="#5B6872" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="0" cy="-10" r="6"/><circle cx="-13" cy="12" r="5"/><circle cx="13" cy="12" r="5"/><path d="M0-4v8M-13 7V3h26v4"/></g>
+<text x="1314" y="857" font-size="26" font-weight="600" text-anchor="middle" class="" data-label="agent">Agent Runtime</text>
+<text x="1314" y="895" font-size="21" font-weight="400" text-anchor="middle" class="muted" data-label="agent_desc">Own harness · Task</text>
+<text x="750" y="989" font-size="25" font-weight="400" text-anchor="middle" class="link" data-label="data">Authorized HTTPS · Files · Images · Large artifacts</text>
+<path d="M186 942V958" fill="none" stroke="#66837F" stroke-width="2.4" stroke-dasharray="6 7" marker-start="url(#arrow)"/>
+<path d="M186 1002V1022" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="6 7"/>
+<path d="M468 942V958" fill="none" stroke="#66837F" stroke-width="2.4" stroke-dasharray="6 7" marker-start="url(#arrow)"/>
+<path d="M468 1002V1022" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="6 7"/>
+<path d="M750 942V958" fill="none" stroke="#66837F" stroke-width="2.4" stroke-dasharray="6 7" marker-start="url(#arrow)"/>
+<path d="M750 1002V1022" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="6 7"/>
+<path d="M1032 942V958" fill="none" stroke="#66837F" stroke-width="2.4" stroke-dasharray="6 7" marker-start="url(#arrow)"/>
+<path d="M1032 1002V1022" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="6 7"/>
+<path d="M1314 942V958" fill="none" stroke="#66837F" stroke-width="2.4" stroke-dasharray="6 7" marker-start="url(#arrow)"/>
+<path d="M1314 1002V1022" fill="none" stroke="#66837F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="6 7"/>
+<rect data-card="artifacts" x="56" y="1036" width="1388" height="120" rx="16" fill="#F1F5F7" stroke="#D4DEE3" stroke-width="2"/>
+<g transform="translate(557 1073)" fill="none" stroke="#2D827B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="0" cy="-10" rx="12" ry="5"/><path d="M-12-10v20c0 7 24 7 24 0v-20M-12 0c0 7 24 7 24 0"/></g>
+<text x="777" y="1086" font-size="36" font-weight="650" text-anchor="middle" class="" data-label="storage">Object Storage</text>
+<text x="750" y="1129" font-size="25" font-weight="400" text-anchor="middle" class="muted" data-label="storage_desc">Inputs and outputs · Verified content · Durable references</text>
+<text x="750" y="1200" font-size="23" font-weight="400" text-anchor="middle" class="muted" data-label="baseline">Baseline: one active coordinator · Serial Sessions · Fixed device ownership</text>
+</svg>

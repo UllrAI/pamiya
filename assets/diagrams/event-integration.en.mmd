@@ -1,0 +1,5 @@
+flowchart LR
+  S[Event Source] --> T["Optional Tenon<br/>Transform · Filter · Aggregate"]
+  T --> K[Normalized event]
+  K --> E["Platform<br/>Persistence · Rules"]
+  E --> R[Run]
