@@ -2,9 +2,11 @@
 
 [Index](README.md) · [简体中文](../zh-CN/open-source-foundation.md)
 
-Reviewed: 2026-10-15. **Pamiya should reuse an existing Agent product rather than rebuild a general-purpose one. First validate DSH's complete Web/desktop composition, adding Pamiya experience and remote capabilities through presets, themes, and plugins.** This is a source/contract-level recommendation; runtime validation and migration are not complete.
+Reviewed: 2026-10-15. **Pamiya should reuse an existing Agent product rather than rebuild a general-purpose one. First validate DSH's complete Web/desktop composition, adding Pamiya experience and remote capabilities through presets, themes, and plugins.** This was the initial source/contract-level recommendation; current implementation status is linked below.
 
 `prototype/` validates experience. Having written a demonstration UI does not justify also implementing a model loop, Session system, application Host, and backend from scratch.
+
+Implementation update: the DSH plugin now exists in `packages/dsh-plugin`; see [installation, verification and limits](../../en/dsh-plugin.md). The review below records the original source-level decision; it is not the current delivery status.
 
 ## Candidates
 
@@ -76,7 +78,7 @@ These are specific compatibility checks, not reasons to first build a policy eng
 2. Connect one Worker and test tool calls, reconnects, duplicates, acknowledgements and stop; uncertain submitted effects must not replay.
 3. Verify artifact revision, state retention through upstream upgrades, and the reminder/archive decisions. List kernel changes; if many essential behaviors require invasive changes, compare Pi/OpenClaw migration costs again.
 
-Only after these pass does a preferred candidate become an adopted foundation. This review did not install/run a DSH model, execute its build scripts, copy source into production, or replace the prototype with a fake integration.
+Only after these pass does a preferred candidate become an adopted foundation. The original review did not execute or migrate a runtime; the subsequent implementation keeps the prototype separate.
 
 ## License and evidence
 

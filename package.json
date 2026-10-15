@@ -1,15 +1,21 @@
 {
-  "name": "pamiya-architecture",
+  "name": "pamiya",
   "version": "0.1.0",
   "private": true,
-  "description": "Documentation tooling for the Pamiya architecture proposal",
+  "description": "Pamiya Agent capabilities for DeepSeek Harness, remote Workers and bilingual architecture documentation",
   "type": "module",
   "scripts": {
     "docs:check": "python3 scripts/check_docs.py",
-    "diagrams:render": "node scripts/render_diagrams.mjs"
+    "diagrams:render": "node scripts/render_diagrams.mjs",
+    "plugin:build": "npm run build --workspace @pamiya/dsh-plugin",
+    "plugin:test": "npm run test --workspace @pamiya/dsh-plugin",
+    "plugin:check": "npm run check --workspace @pamiya/dsh-plugin"
   },
   "devDependencies": {
     "mermaid": "11.17.2",
     "playwright": "1.62.1"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

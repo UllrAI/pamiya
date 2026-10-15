@@ -17,6 +17,8 @@ These implementation-ready decisions start from the approved home-screen visual 
 
 [Prototype guide](../../../prototype/README.md) · [Approved home](../../../prototype/design/selected-home.png)
 
+The implemented DSH extension is documented in [installation and usage](../../en/dsh-plugin.md). It reuses the native Agent; the standalone prototype remains an experience reference.
+
 ## Experience
 
 ```mermaid

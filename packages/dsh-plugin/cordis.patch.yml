@@ -1,0 +1,3 @@
+- insert:
+    - id: pamiya
+      name: '@pamiya/dsh-plugin'

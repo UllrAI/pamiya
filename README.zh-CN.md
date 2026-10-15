@@ -4,7 +4,22 @@
 
 Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提供上下文，让它自主推进，再一起完善可使用的成果。底层通过逻辑集中的 Control Plane、持久化 State Plane 和异构 Execution Network，协调云端、桌面、企业内网与设备上的工作。
 
-**产品设计与交互原型 0.2 · 2026-10-15；架构基线 0.1。** 原型使用本地模拟，尚未实现生产 Agent 运行时。
+**DSH 插件 0.1 · 产品交互原型 0.2 · 架构基线 0.1。** 插件使用真实 MQTT 与 Worker；独立原型仍是模拟，分布式平台的扩展提案不等于已实现。
+
+## 安装到 DSH
+
+[安装与使用指南](docs/zh-CN/dsh-plugin.md)覆盖连接设置、本机自动加入、远程配对、多节点管理、运行记录与故障核对。插件复用 DSH 的 Agent 和对话，不需要额外部署控制后台、PostgreSQL 或插件市场。
+
+```sh
+npm ci
+node scripts/install-dsh-plugin.mjs --demo
+```
+
+`--demo` 会在首次安装时填入 RunMQTT 公共测试连接，并检查本机节点；个人文件和命令能力仅在自有私有连接中开放。
+
+![DSH 中的 Pamiya：本机与远端真实节点](packages/dsh-plugin/design/two-workers.zh-CN.png)
+
+[实际验收与待完成检查](docs/zh-CN/dsh-verification.md)。
 
 ## 产品与原型
 
@@ -18,7 +33,7 @@ Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提
 
 ## 从小而完整的首版开始
 
-拟议的 DSH 插件先用一个 Host、一个 Worker 和现有持久化验证。下文架构描述分布式部署，不是安装插件必须具备的整套设施。
+DSH 插件以一个 Host、多个 Worker 和宿主现有持久化实现。下文架构描述分布式部署，不是安装插件必须具备的整套设施。
 
 一个活跃协调者串行推进每个 Session；多个 Worker 主动建立出站连接，每个有状态设备或 Environment 有固定执行归属。PostgreSQL 保存意图、Attempt、结果和检查点，MQTT 传递小型命令与事件，HTTPS 和对象存储承担文件数据通道。
 

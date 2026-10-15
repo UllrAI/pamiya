@@ -4,7 +4,7 @@
 
 Pamiya separates the long-lived responsibilities of a Personal Agent from its harness, durable state, and heterogeneous execution network. The target architecture combines a logically centralized **Control Plane**, a durable **State Plane**, and a pluggable **Execution Network** with capability discovery and routing. MQTT connects remote Workers; tool execution and Agent delegation share task tracking while retaining different execution semantics.
 
-Design baseline: **0.1 · 2026-10-14**. This repository contains architecture proposals, not a production runtime. Implement the lightweight baseline first; enable stronger mechanisms when their triggering requirements appear.
+Design baseline: **0.1 · 2026-10-14**. This set describes architecture proposals; the implemented DSH plugin is documented separately in [installation and usage](dsh-plugin.md). Implement the lightweight baseline first; enable stronger mechanisms when their triggering requirements appear.
 
 ## Reading order
 
@@ -35,3 +35,5 @@ Read the first two documents for the system model, then the protocol and reliabi
 The data model, Topics, JSON messages, state names, and delivery phases are platform design proposals. They do not claim wire compatibility with an external standard. A2A, MCP, and their MQTT profiles require version-pinned adapters; internal examples are not standard protocol messages.
 
 Official links support third-party capability statements. The Dot/Codex example illustrates delegation, not OpenAI's internal architecture or transport. MQTT and camera capabilities for ESP32 are proposed extensions, not features claimed for the original iPhone project.
+
+[DSH plugin installation and usage](dsh-plugin.md).

@@ -4,7 +4,22 @@
 
 Pamiya is a **personal Agent for ongoing work**: express a goal, provide context, let it advance the work, and refine a useful result together. Its architecture connects cloud services, desktops, enterprise networks, and devices through a logically centralized Control Plane, durable State Plane, and heterogeneous Execution Network.
 
-**Product design and interactive prototype 0.2 · 2026-10-15. Architecture baseline 0.1.** The prototype uses local simulations; a production Agent runtime has not been implemented.
+**DSH plugin 0.1 · Interaction prototype 0.2 · Architecture baseline 0.1.** The plugin uses real MQTT and Workers. The standalone prototype remains a simulation, and platform extension proposals are distinct from implemented capabilities.
+
+## Install into DSH
+
+The [installation and usage guide](docs/en/dsh-plugin.md) covers connections, the automatic local Worker, remote pairing, worker management, execution records and result reconciliation. Pamiya reuses DSH’s Agent and conversations without a separate control backend, PostgreSQL or plugin marketplace.
+
+```sh
+npm ci
+node scripts/install-dsh-plugin.mjs --demo
+```
+
+`--demo` loads the RunMQTT public test connection on first setup and checks the local Worker. Personal files and commands require your own private connection.
+
+![Pamiya in DSH: two real workers](packages/dsh-plugin/design/two-workers.en.png)
+
+[Recorded verification and pending checks](docs/en/dsh-verification.md).
 
 ## Product and prototype
 
@@ -18,7 +33,7 @@ The home stays quiet and direct. Activity and artifacts appear in context; infra
 
 ## Start with a small, complete baseline
 
-For the proposed DSH plugin, first validate one Host and one Worker using existing persistence. The architecture below describes distributed deployment; it is not a mandatory stack for installing the plugin.
+The DSH plugin uses one Host, multiple Workers and existing Host persistence. The architecture below describes distributed deployment; it is not a mandatory stack for installing the plugin.
 
 One active coordinator advances each Session serially. Multiple Workers connect outbound; each stateful device or Environment has a fixed execution owner. PostgreSQL stores intent, Attempts, results, and checkpoints. MQTT carries small commands/events; HTTPS and object storage carry files.
 

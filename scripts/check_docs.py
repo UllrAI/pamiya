@@ -28,7 +28,7 @@ def anchors(path):
     return result
 
 
-markdown = sorted(p for p in ROOT.rglob("*.md") if not {"node_modules", ".git", ".tmp"} & set(p.relative_to(ROOT).parts))
+markdown = sorted(p for p in ROOT.rglob("*.md") if not {"node_modules", ".git", ".tmp", "artifacts", "dist"} & set(p.relative_to(ROOT).parts))
 link_count = 0
 for path in markdown:
     text = path.read_text()

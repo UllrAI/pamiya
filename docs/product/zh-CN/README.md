@@ -17,6 +17,8 @@
 
 [打开原型说明](../../../prototype/README.md) · [查看已选首页](../../../prototype/design/selected-home.png)
 
+实际 DSH 扩展见[安装与使用](../../zh-CN/dsh-plugin.md)。插件复用原生 Agent；独立原型继续作为体验参考。
+
 ## 体验主线
 
 ```mermaid

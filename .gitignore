@@ -4,3 +4,7 @@ node_modules/
 __pycache__/
 prototype/dist/
 prototype/evidence/
+
+packages/dsh-plugin/dist/
+artifacts/
+.pamiya/
