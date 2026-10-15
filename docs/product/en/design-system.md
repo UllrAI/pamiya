@@ -6,7 +6,7 @@
 
 Follow the approved quiet desktop Agent visual: white canvas, light gray sidebar, compact heading, generous whitespace, and a refined composer. Expressing a goal is the focus. Use the Pamiya text wordmark and consistent icons, without abstract illustrations, marketing cards, duplicated brand headings, or large green status blocks.
 
-The selected image is 1566 × 1004. Compare at matching CSS viewport and 1× density. It is a visual target, not an application background; real text, controls, and inputs implement the interface.
+The selected image is 1566 × 1004 and preserves the palette/layout direction. User feedback on 2026-10-15 requested smaller type; the scale below supersedes the mock. Compare before/after at the same CSS viewport and 1× density. Physical screenshot pixels must not cause enlarged CSS sizing. Real text, controls, and inputs implement the interface.
 
 ## Foundations
 
@@ -19,8 +19,8 @@ The selected image is 1566 × 1004. Compare at matching CSS viewport and 1× den
 | Divider / input border | `#E5E8EC` / `#DCE0E6` |
 | Accent | Restrained gray teal; deep blue gray for primary actions |
 | Fonts | Inter, system sans serif, PingFang SC / Microsoft YaHei fallback |
-| Body | 14–16 px, comfortable document leading; no ultralight readability sacrifice |
-| Home heading | About 36–40 px desktop, 28 px phone; no oversized marketing type |
+| Body | Body/input 14 px, history 13 px, comfortable document leading |
+| Home heading | 28 px desktop, 24 px phone; no viewport-driven enlargement |
 | Spacing | Mainly 4 / 8 / 12 / 16 / 24 / 32 / 48 px |
 | Radius | Composer about 21 px; controls/list rows about 8–11 px |
 | Elevation | Extremely subtle composer shadow; elevated dialogs when needed; no nested cards |
@@ -46,7 +46,7 @@ Retain existing repository banner branding. The app need not use a dark banner b
 
 | Width | Layout |
 |---|---|
-| Above 1150 px | Approximately 22% sidebar; one-column conversation, optional adjacent artifact |
+| Above 1150 px | 248 px sidebar, home composer at most 760 px; one-column conversation, optional artifact |
 | 761–1150 px | Narrow fixed sidebar; artifact replaces main content until closed |
 | 360–760 px | Sidebar drawer; conversation/artifact occupy the main region in turn; input/close remain reachable |
 

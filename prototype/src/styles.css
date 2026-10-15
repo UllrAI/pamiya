@@ -84,7 +84,7 @@ p {
 .app-shell {
   height: 100dvh;
   display: grid;
-  grid-template-columns: 21.9% minmax(0, 1fr);
+  grid-template-columns: 248px minmax(0, 1fr);
   overflow: hidden;
 }
 .app-shell.sidebar-collapsed {
@@ -103,10 +103,10 @@ p {
   align-items: center;
   justify-content: space-between;
   padding: 0 5px;
-  margin-bottom: 35px;
+  margin-bottom: 28px;
 }
 .wordmark {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 650;
   letter-spacing: -1.1px;
 }
@@ -129,13 +129,13 @@ p {
   align-items: center;
   gap: 13px;
   width: 100%;
-  padding: 14px 16px;
+  padding: 12px 13px;
   border-radius: 11px;
   background: #ffffffb0;
   border: 1px solid #ffffff40;
   text-align: left;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 14px;
 }
 .new-chat:hover {
   background: #fff;
@@ -145,17 +145,18 @@ p {
   align-items: center;
   gap: 15px;
   text-align: left;
-  padding: 17px 6px;
-  margin-top: 15px;
-  font-size: 15px;
+  padding: 15px 6px;
+  margin-top: 12px;
+  font-size: 14px;
   border-radius: 8px;
 }
 .nav-tools:hover {
   background: #e4e7eb;
 }
 .history-heading {
-  margin-top: 22px;
-  padding: 15px 4px 7px;
+  font-size: 12px;
+  margin-top: 18px;
+  padding: 12px 4px 7px;
   border-top: 1px solid #dfe3e9;
   display: flex;
   align-items: center;
@@ -190,8 +191,9 @@ p {
   gap: 16px;
   align-items: center;
   text-align: left;
-  height: 47px;
-  padding: 0 17px;
+  height: 40px;
+  font-size: 13px;
+  padding: 0 13px;
   flex: 1;
   min-width: 0;
 }
@@ -296,18 +298,18 @@ p {
   gap: 5px;
 }
 .welcome {
-  width: 76%;
-  max-width: 1100px;
+  width: min(76%, 760px);
+  max-width: 760px;
   margin: auto;
   transform: translateY(-4px);
 }
 .welcome h1 {
   text-align: center;
-  font-size: clamp(28px, 2.5vw, 44px);
-  font-weight: 600;
-  letter-spacing: -1.2px;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
   line-height: 1.4;
-  margin: 0 0 45px;
+  margin: 0 0 32px;
 }
 .composer {
   border: 1px solid #dce0e6;
@@ -321,7 +323,7 @@ p {
   box-shadow: 0 5px 26px #13263909;
 }
 .home-composer {
-  padding: 21px 15px 12px;
+  padding: 17px 15px 12px;
 }
 .composer textarea {
   display: block;
@@ -330,7 +332,7 @@ p {
   border-radius: 0;
   outline: 0;
   padding: 0 4px;
-  font-size: 15px;
+  font-size: 14px;
   resize: none;
   min-height: 57px;
   max-height: 180px;
@@ -341,7 +343,7 @@ p {
   outline: none;
 }
 .home-composer textarea {
-  min-height: 78px;
+  min-height: 72px;
 }
 .composer textarea::placeholder {
   color: #818b9a;
@@ -429,7 +431,7 @@ p {
 .message {
   margin-bottom: 28px;
   line-height: 1.85;
-  font-size: 15px;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 .message.user {
@@ -610,10 +612,7 @@ p {
   width: 12px;
 }
 .has-artifact {
-  grid-template-columns: minmax(225px, 18%) minmax(340px, 1fr) minmax(
-      430px,
-      45%
-    );
+  grid-template-columns: 248px minmax(340px, 1fr) minmax(430px, 45%);
 }
 .has-artifact.sidebar-collapsed {
   grid-template-columns: minmax(350px, 1fr) minmax(430px, 53%);
@@ -693,7 +692,7 @@ p {
 }
 .document h1 {
   color: #1a2832;
-  font-size: 27px;
+  font-size: 24px;
   letter-spacing: -0.7px;
   line-height: 1.5;
   margin-bottom: 24px;
@@ -701,7 +700,7 @@ p {
 }
 .document h2 {
   color: #293b48;
-  font-size: 18px;
+  font-size: 16px;
   margin: 31px 0 13px;
   line-height: 1.5;
   font-weight: 500;
@@ -797,7 +796,7 @@ p {
 }
 .modal-header h2 {
   margin: 0;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 500;
 }
 .modal-body {
@@ -1108,67 +1107,6 @@ p {
 .mobile-shade {
   display: none;
 }
-@media (min-width: 1800px) {
-  :root {
-    font-size: 16px;
-  }
-  .sidebar {
-    padding: 30px 30px 25px;
-  }
-  .brand-row {
-    margin-bottom: 49px;
-  }
-  .wordmark {
-    font-size: 36px;
-  }
-  .new-chat {
-    font-size: 18px;
-    padding: 17px 20px;
-  }
-  .nav-tools {
-    font-size: 18px;
-    margin-top: 22px;
-    padding-block: 22px;
-  }
-  .history-heading {
-    margin-top: 30px;
-    padding-top: 20px;
-  }
-  .history-row > button:first-child {
-    font-size: 17px;
-    height: 59px;
-    gap: 20px;
-    padding-inline: 23px;
-  }
-  .welcome h1 {
-    margin-bottom: 59px;
-  }
-  .home-composer {
-    padding: 28px 20px 16px;
-    border-radius: 26px;
-  }
-  .home-composer textarea {
-    min-height: 104px;
-    font-size: 19px;
-  }
-  .home-composer .tool-selector {
-    font-size: 16px;
-  }
-  .home-composer .send-button,
-  .home-composer .add-button {
-    width: 46px;
-    height: 46px;
-  }
-  .icon-button {
-    width: 40px;
-    height: 40px;
-  }
-  .preview-label {
-    font-size: 15px;
-    right: 35px;
-    bottom: 36px;
-  }
-}
 @media (max-width: 1150px) {
   .app-shell {
     grid-template-columns: 245px minmax(0, 1fr);
@@ -1195,7 +1133,7 @@ p {
     padding-inline: 15px;
   }
   .wordmark {
-    font-size: 25px;
+    font-size: 24px;
   }
   .document {
     padding: 30px 35px;
@@ -1227,7 +1165,7 @@ p {
     margin-bottom: 30px;
   }
   .wordmark {
-    font-size: 28px;
+    font-size: 24px;
   }
   .main {
     width: 100%;
@@ -1245,7 +1183,7 @@ p {
     transform: translateY(-35%);
   }
   .welcome h1 {
-    font-size: 28px;
+    font-size: 24px;
     letter-spacing: -0.8px;
     margin-bottom: 30px;
   }
@@ -1328,7 +1266,7 @@ p {
     font-size: 14px;
   }
   .document h1 {
-    font-size: 24px;
+    font-size: 22px;
   }
   .artifact-foot {
     padding-inline: 15px;
@@ -1376,56 +1314,6 @@ p {
     scroll-behavior: auto !important;
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-  }
-}
-/* Match the approved desktop reference's optical scale. */
-@media (min-width: 761px) and (max-width: 1799px) {
-  .wordmark {
-    font-size: 30px;
-  }
-  .brand-row {
-    margin-bottom: 40px;
-  }
-  .new-chat,
-  .nav-tools {
-    font-size: 16px;
-  }
-  .nav-tools {
-    margin-top: 18px;
-  }
-  .history-heading {
-    margin-top: 25px;
-    font-size: 15px;
-  }
-  .history-row > button:first-child {
-    font-size: 16px;
-    height: 49px;
-  }
-  .more-button {
-    font-size: 16px;
-  }
-  .welcome h1 {
-    font-size: clamp(28px, 2.5vw, 40px);
-    margin-bottom: 49px;
-  }
-  .home-composer textarea {
-    font-size: 17px;
-    min-height: 89px;
-  }
-  .home-composer .tool-selector {
-    font-size: 15px;
-    gap: 10px;
-  }
-  .home-composer .add-button,
-  .home-composer .send-button {
-    width: 44px;
-    height: 44px;
-  }
-  .home-composer .composer-bottom {
-    gap: 14px;
-  }
-  .home-composer .composer-bottom > div {
-    gap: 15px;
   }
 }
 /* Keep secondary information readable without changing the quiet visual hierarchy. */

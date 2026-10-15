@@ -14,7 +14,11 @@ Start with the [requirements and interaction documents](docs/product/en/README.m
 
 The home stays quiet and direct. Activity and artifacts appear in context; infrastructure and task tracking support the experience. See the [visual QA](prototype/design-qa.md) for verification and simulation limits.
 
+[Open-source foundation review](docs/product/en/open-source-foundation.md): first validate a Pamiya extension bundle inside DSH, reusing its Agent and UI; the prototype is an experience reference, not a reason to rebuild the runtime.
+
 ## Start with a small, complete baseline
+
+For the proposed DSH plugin, first validate one Host and one Worker using existing persistence. The architecture below describes distributed deployment; it is not a mandatory stack for installing the plugin.
 
 One active coordinator advances each Session serially. Multiple Workers connect outbound; each stateful device or Environment has a fixed execution owner. PostgreSQL stores intent, Attempts, results, and checkpoints. MQTT carries small commands/events; HTTPS and object storage carry files.
 

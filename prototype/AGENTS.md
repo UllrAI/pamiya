@@ -4,6 +4,7 @@
 
 - Pamiya is a modern, long-lived personal Agent. Conversation and autonomous work are primary; task administration is secondary.
 - Match `design/selected-home.png`: quiet white canvas, cool gray sidebar, restrained typography, delicate composer, generous whitespace. No marketing cards or dashboard counters on the home screen.
+- User refinement on 2026-10-15 overrides the mock's scale: desktop heading 28 px, phone heading 24 px, body/input 14 px, history 13 px, wordmark 24 px, desktop sidebar 248 px and home composer at most 760 px. Do not enlarge type with viewport width.
 - Use Phosphor library icons. The selected screen has no raster art; Pamiya is editable wordmark text.
 - Keep the prototype honest: local deterministic simulation, local browser storage, no real model/tool/device connection, background timer or outgoing message.
 - Existing authorization covers ordinary work; ask only for concrete missing input or scope.

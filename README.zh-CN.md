@@ -14,7 +14,11 @@ Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提
 
 首页保持安静、直接；活动与成果按需展开，基础设施与任务跟踪支撑这段体验。[视觉 QA](prototype/design-qa.md)记录实际验证与模拟边界。
 
+[开源基座评审](docs/product/zh-CN/open-source-foundation.md)：优先验证 DSH 上的 Pamiya 插件/扩展包，复用原生 Agent 与界面；当前原型用于表达体验，不作为从零重建运行时的理由。
+
 ## 从小而完整的首版开始
+
+拟议的 DSH 插件先用一个 Host、一个 Worker 和现有持久化验证。下文架构描述分布式部署，不是安装插件必须具备的整套设施。
 
 一个活跃协调者串行推进每个 Session；多个 Worker 主动建立出站连接，每个有状态设备或 Environment 有固定执行归属。PostgreSQL 保存意图、Attempt、结果和检查点，MQTT 传递小型命令与事件，HTTPS 和对象存储承担文件数据通道。
 

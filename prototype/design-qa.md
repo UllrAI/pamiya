@@ -4,7 +4,7 @@ Date: 2026-10-15. Scope: approved Agent-first visual and interactive local proto
 
 ## Comparison target and evidence
 
-- Source visual truth: [selected-home.png](design/selected-home.png), explicitly approved by the user.
+- Source visual direction: [selected-home.png](design/selected-home.png), explicitly approved by the user. The subsequent request for smaller typography overrides its original scale; preserve palette and interaction hierarchy, not the former oversized dimensions.
 - Final browser-rendered implementation: [implemented-home.png](design/implemented-home.png).
 - CSS viewport: 1566 × 1004, desktop, home/empty composer, sidebar expanded, initial three demonstration conversations, light theme.
 - Source pixels: 1566 × 1004. Implementation pixels: 1566 × 1004. Device scale: 1. No crop, density scaling, browser chrome, or device frame was used in comparison.
@@ -20,12 +20,22 @@ Date: 2026-10-15. Scope: approved Agent-first visual and interactive local proto
 4. **Interaction pass — blocked. [P2] Undo feedback outside a native modal was not actionable.** Moved feedback into the active dialog's top layer. Deleted and restored a memory using that dialog's undo action, then inspected the returned state.
 5. **Final comparison — passed.** Full and focused comparisons show the approved proportions, hierarchy, copy, and surface treatment. No actionable P0/P1/P2 visual or primary-flow issues remain in the tested scope. Slight raster-versus-browser type/stroke differences and the reference's generated background texture are acceptable P3 differences; no code drawing or fake illustration was introduced to imitate texture.
 
+## Compact typography refinement
+
+The user subsequently found the type too large. This overrides the original scale-matching finding above. Desktop heading is now 28 px, phone heading 24 px, body/composer 14 px, history 13 px, wordmark 24 px. Wide screens no longer enlarge typography. The desktop sidebar is 248 px and home composer caps at 760 px; these are intentional user-directed departures from the selected source.
+
+- Rebuilt and inspected actual browser views at 1566 × 1004, 1920 × 1080, 1024 × 768 and 390 × 844. Computed heading/input sizes remain 28/14 px at both desktop widths and 24/14 px on phone. Phone and tablet document widths equal their viewport widths.
+- Opened and inspected the combined [source/current view](design/qa/home-comparison.png), [heading/composer](design/qa/composer-comparison.png), [sidebar](design/qa/sidebar-comparison.png), and [before/after typography](design/qa/typography-before-after.png). The narrower sidebar and composer are accepted changes, not fidelity regressions.
+- Refreshed clean demonstration captures for [wide home](design/qa/wide-home.png), desktop home/artifact and phone home/artifact. A separate local QA origin preserved the user's actual conversation history; public captures contain demonstration data only.
+- Phone artifact reading and “继续交流” were rechecked. No browser warnings/errors or actionable P0/P1/P2 findings in this refinement. Colors, assets, copy and primary-flow logic are unchanged.
+- Code format, production build, document links and whitespace checks passed. No model logic changed; existing model/hosting test results above are from the earlier implementation pass, not newly rerun tests.
+
 ## Required fidelity surfaces
 
 | Surface | Review result |
 |---|---|
 | Fonts and typography | Inter/system sans with Chinese system fallback; wordmark, heading, body, placeholders and navigation checked in focused views. Weight and wrapping preserve the reference hierarchy; informative secondary text is darkened slightly for readability. |
-| Spacing and layout rhythm | Matching desktop viewport and sidebar/main proportions; composer width, height, gap, corner radius and diffuse shadow compared. Wide artifact split and narrow replacement views remain usable. |
+| Spacing and layout rhythm | Matching desktop comparison viewport; compact sidebar/composer dimensions intentionally supersede the original proportions. Height, gap, corner radius and diffuse shadow compared. Wide artifact split and narrow replacement views remain usable. |
 | Colors and tokens | White canvas, cool-gray sidebar, low-contrast selection, charcoal type and muted teal send action match the intended visual. Errors use specific text and restrained emphasis. |
 | Image quality and assets | Source has no custom raster art, avatars or pictorial logo. Editable Pamiya wordmark text and official Phosphor icons are appropriate. The UI is interactive DOM, not a raster screenshot or handcrafted illustration. |
 | Copy and content | Approved home text retained. Simulation is explicit; unsupported file content, stopping and unknown results do not claim success. Management vocabulary stays outside the home focus. |

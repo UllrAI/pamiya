@@ -13,6 +13,7 @@ These implementation-ready decisions start from the approved home-screen visual 
 | [Interaction specification](interactions.md) | First use, collaboration, artifacts, connections, memory, schedules, recovery |
 | [Visual system and components](design-system.md) | Approved visual, sizing, components, responsiveness, accessibility |
 | [Prototype and acceptance](prototype-and-acceptance.md) | Implemented scope, walkthrough, acceptance matrix, production integration |
+| [Open-source foundation](open-source-foundation.md) | MIT candidates, DSH reuse, compatibility gaps and adoption gate |
 
 [Prototype guide](../../../prototype/README.md) · [Approved home](../../../prototype/design/selected-home.png)
 

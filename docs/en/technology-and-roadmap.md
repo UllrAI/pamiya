@@ -2,6 +2,8 @@
 
 # Pamiya technology choices and delivery roadmap
 
+Product implementation should first validate an existing open-source Agent and UI rather than rebuild the Harness. The [foundation review](../product/en/open-source-foundation.md) recommends evaluating DSH, with explicit persistence, completion, schedule and remote-execution compatibility checks. First validate a Pamiya extension bundle with one Host and one Worker using existing persistence. The distributed deployment below is not a mandatory plugin stack, and its contracts do not require implementing every layer from scratch.
+
 Begin with a single-active modular Control application, PostgreSQL, object storage, MQTT Broker and lightweight Workers. Establish fixed ownership, recoverable Tasks and necessary authority first. Remote Agents, active takeover and event integration follow actual requirements. All baseline references use the [same assumptions](architecture-patterns.md#initial-implementation-baseline).
 
 Navigation: [Index](README.md) · [Architecture](platform-architecture.md) · [Reliability](reliability.md)

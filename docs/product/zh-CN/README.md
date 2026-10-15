@@ -13,6 +13,7 @@
 | [交互规格](interactions.md) | 首次使用、持续协作、成果、连接、记忆、安排与异常 |
 | [视觉与组件](design-system.md) | 已选视觉、尺寸、组件、响应式与无障碍 |
 | [原型与验收](prototype-and-acceptance.md) | 已实现范围、操作脚本、验收矩阵和生产接入顺序 |
+| [开源基座选型](open-source-foundation.md) | MIT 候选、DSH 复用边界、兼容差异与采用门槛 |
 
 [打开原型说明](../../../prototype/README.md) · [查看已选首页](../../../prototype/design/selected-home.png)
 

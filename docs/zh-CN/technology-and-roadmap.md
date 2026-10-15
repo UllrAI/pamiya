@@ -2,6 +2,8 @@
 
 # Pamiya 技术选型与实施路线
 
+产品实现优先验证现成的开源 Agent 与 UI，不从零重建 Harness。[基座评审](../product/zh-CN/open-source-foundation.md)首先推荐验证 DSH，明确持久化、完成判断、安排与远程执行的兼容边界。先用一个 Host、一个 Worker 与现有持久化验证 Pamiya 扩展包。下文是分布式部署方案，不是安装插件的必备设施；约束表达目标行为，不代表每层都要自行实现。
+
 首版以单活的模块化 Control 应用、PostgreSQL、对象存储、MQTT Broker 和轻量 Worker 实现闭环。先完成固定执行归属、可恢复任务和必要授权，再按需求扩展远程 Agent、多活接管与事件集成。首版边界统一见 [实现基线](architecture-patterns.md#首版实现基线)。
 
 导航：[阅读指南](README.md) · [平台架构](platform-architecture.md) · [可靠执行](reliability.md)
