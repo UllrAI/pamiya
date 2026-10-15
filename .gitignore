@@ -2,3 +2,5 @@
 node_modules/
 .tmp/
 __pycache__/
+prototype/dist/
+prototype/evidence/

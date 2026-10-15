@@ -2,9 +2,17 @@
 
 **English** · [简体中文](README.zh-CN.md)
 
-Pamiya is an architecture for **Personal Agents that coordinate work across cloud services, desktops, enterprise networks, and physical devices**. It separates a logically centralized Control Plane, durable State Plane, and heterogeneous Execution Network. Capability discovery and routing connect the harness to tools and specialist Agents.
+Pamiya is a **personal Agent for ongoing work**: express a goal, provide context, let it advance the work, and refine a useful result together. Its architecture connects cloud services, desktops, enterprise networks, and devices through a logically centralized Control Plane, durable State Plane, and heterogeneous Execution Network.
 
-**Architecture proposal · baseline 0.1 · 2026-10-14.** This repository contains design documents and visual assets. A production runtime has not been implemented here.
+**Product design and interactive prototype 0.2 · 2026-10-15. Architecture baseline 0.1.** The prototype uses local simulations; a production Agent runtime has not been implemented.
+
+## Product and prototype
+
+Start with the [requirements and interaction documents](docs/product/en/README.md), the [Chinese edition](docs/product/zh-CN/README.md), or the [runnable prototype](prototype/README.md). They cover conversation, autonomous progress, editable artifacts, recovery, connections, memory, and continuing responsibilities.
+
+![Pamiya Agent home](prototype/design/implemented-home.png)
+
+The home stays quiet and direct. Activity and artifacts appear in context; infrastructure and task tracking support the experience. See the [visual QA](prototype/design-qa.md) for verification and simulation limits.
 
 ## Start with a small, complete baseline
 

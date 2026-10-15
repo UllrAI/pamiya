@@ -2,9 +2,17 @@
 
 [English](README.md) · **简体中文**
 
-Pamiya 是一套面向 **Personal Agent 的平台架构**，让 Agent 协调云端、桌面、企业内网和实体设备上的工作。平台分离逻辑集中的 Control Plane、持久化的 State Plane 和异构 Execution Network，通过能力发现与路由连接 Harness、工具和专业 Agent。
+Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提供上下文，让它自主推进，再一起完善可使用的成果。底层通过逻辑集中的 Control Plane、持久化 State Plane 和异构 Execution Network，协调云端、桌面、企业内网与设备上的工作。
 
-**架构设计提案 · 基线 0.1 · 2026-10-14。** 当前仓库交付架构文档与视觉资产，尚未实现生产运行时。
+**产品设计与交互原型 0.2 · 2026-10-15；架构基线 0.1。** 原型使用本地模拟，尚未实现生产 Agent 运行时。
+
+## 产品与原型
+
+从[需求与交互文档](docs/product/zh-CN/README.md)、[英文版](docs/product/en/README.md)或[可运行原型](prototype/README.md)开始。内容覆盖对话、自主推进、成果编辑、恢复、连接、记忆与持续承担。
+
+![Pamiya Agent 首页](prototype/design/implemented-home.png)
+
+首页保持安静、直接；活动与成果按需展开，基础设施与任务跟踪支撑这段体验。[视觉 QA](prototype/design-qa.md)记录实际验证与模拟边界。
 
 ## 从小而完整的首版开始
 

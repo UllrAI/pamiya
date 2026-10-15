@@ -48,6 +48,13 @@ for path in markdown:
 en = ROOT / "docs/en"
 zh = ROOT / "docs/zh-CN"
 check({p.name for p in en.glob("*.md")} == {p.name for p in zh.glob("*.md")}, "Language document inventory differs")
+product_en = ROOT / "docs/product/en"
+product_zh = ROOT / "docs/product/zh-CN"
+check({p.name for p in product_en.glob("*.md")} == {p.name for p in product_zh.glob("*.md")}, "Product language document inventory differs")
+for path in product_en.glob("*.md"):
+    other = product_zh / path.name
+    if other.exists():
+        check(set(re.findall(r"\b[RA]\d{2}\b", path.read_text())) == set(re.findall(r"\b[RA]\d{2}\b", other.read_text())), f"Product requirement IDs differ: {path.name}")
 examples = {}
 for path in sorted(en.glob("*.md")):
     other = zh / path.name
