@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Controller, runmqttPreset } from "./controller.js";
 import { sharedModelCall } from "./model-gateway.js";
+import { SkillCatalog } from "./skills.js";
 import { errorText } from "./protocol.js";
 
 export const name = "pamiya";
@@ -16,6 +17,7 @@ export const inject = [
   "llm",
   "agents",
   "agentDefaultModel",
+  "skills",
 ];
 const idSchema = z.string().uuid();
 const dispatchSchema = z
@@ -65,7 +67,22 @@ export async function apply(ctx, config = {}) {
         }
       : null;
   };
+  const home = resolve(process.env.DSH_HOME || resolve(homedir(), ".dsh"));
+  const skillCatalog = new SkillCatalog({
+    home,
+    registry: async ({ sessionId } = {}) => {
+      const agent = sessionId ? ctx.agents?.get(sessionId) : null;
+      const cwd = agent?.session?.header?.cwd;
+      return (
+        ctx.skills?.list({
+          ...(cwd ? { cwd } : {}),
+          ...(agent ? { scope: agent } : {}),
+        }) ?? []
+      );
+    },
+  });
   const controller = new Controller({
+    skillCatalog,
     modelCall: (route, request, signal) =>
       sharedModelCall(ctx.llm, route, request, signal),
     onComplete: async (task) => {
@@ -210,6 +227,33 @@ export async function apply(ctx, config = {}) {
           },
         };
       }
+      if (endpoint === "fileStorage") {
+        if (payload.operation === "save")
+          return {
+            ok: true,
+            value: await controller.fileStore.save(payload.config),
+          };
+        return { ok: true, value: controller.fileStore.snapshot() };
+      }
+      if (endpoint === "skillsCatalog") {
+        const input = z
+          .object({ sessionId: z.string().max(160).optional() })
+          .strict()
+          .parse(payload ?? {});
+        return { ok: true, value: await skillCatalog.list(input) };
+      }
+      if (endpoint === "skillsImport") {
+        const input = z
+          .object({ path: z.string().trim().min(1).max(2000) })
+          .strict()
+          .parse(payload);
+        return { ok: true, value: await skillCatalog.import(input.path) };
+      }
+      if (endpoint === "continue")
+        return {
+          ok: true,
+          value: await controller.continueTask(idSchema.parse(payload.id)),
+        };
       if (endpoint === "snapshot")
         return { ok: true, value: controller.snapshot() };
       if (endpoint === "preset")
@@ -347,6 +391,10 @@ export async function apply(ctx, config = {}) {
   for (const endpoint of [
     "conversation",
     "snapshot",
+    "fileStorage",
+    "skillsCatalog",
+    "skillsImport",
+    "continue",
     "preset",
     "saveBroker",
     "reconnect",
@@ -441,9 +489,55 @@ export async function apply(ctx, config = {}) {
       }),
   });
   ctx.tools.register({
+    name: "pamiya_skills",
+    description:
+      "List Skills visible in this DSH conversation, or check/prepare selected Skills on a worker for DSH, Codex, Claude Code or Pi. Use catalog IDs rather than inventing paths. check only transfers selected files and checks declared dependencies. prepare installs declared Node/Python packages into a managed environment when the user asks to prepare/install, then saves the selection as this worker/agent's default. Skills may include scripts/resources. Missing commands, environment variables and incompatible platforms require action on the worker. Public workers accept only the built-in synthetic sample. Import folders through the UI or operation=import with path. Skill files use HTTPS relay storage; if missing storage is reported, guide the user to the task record’s Configure file storage action. Never ask for storage secrets in conversation.",
+    parameters: {
+      type: "object",
+      properties: {
+        operation: {
+          type: "string",
+          enum: ["list", "check", "prepare", "import"],
+        },
+        workerId: { type: "string" },
+        agent: { type: "string", enum: ["dsh", "codex", "claude", "pi"] },
+        skills: { type: "array", items: { type: "string" }, maxItems: 8 },
+        path: {
+          type: "string",
+          description: "Local Skill folder or SKILL.md path for import",
+        },
+      },
+      required: ["operation"],
+      additionalProperties: false,
+    },
+    output,
+    isConcurrencySafe: () => true,
+    execute: async (args, exec) => {
+      if (args.operation === "list")
+        return skillCatalog.list({ sessionId: exec?.agent?.session?.id });
+      if (args.operation === "import")
+        return skillCatalog.import(z.string().min(1).parse(args.path));
+      if (!args.agent || !args.skills)
+        throw new Error("请选择 Agent 和 Skills");
+      return controller.toolRun(
+        dispatchSchema.parse({
+          workerId: args.workerId,
+          action: "skills.prepare",
+          input: {
+            agent: args.agent,
+            skills: args.skills,
+            installDependencies: args.operation === "prepare",
+          },
+        }),
+        exec,
+        { delegate: true },
+      );
+    },
+  });
+  ctx.tools.register({
     name: "pamiya_delegate",
     description:
-      "Delegate a task to DSH, Codex, Claude Code or Pi on a Pamiya worker. Returns a durable task ID immediately; progress/result can be read with pamiya_task, and completion returns to this conversation. Defaults to sharing this conversation's DSH model and authentication through the host. Independent mode uses that worker agent's own configured provider. Public workers accept synthetic=true only (fixed connectivity prompt). List pamiya_workers first. Resume using sessionRef returned by the previous task; never silently substitute a host tool.",
+      "Delegate a task to DSH, Codex, Claude Code or Pi on a Pamiya worker. Returns a durable task ID immediately; progress/result can be read with pamiya_task, and completion returns to this conversation. Defaults to sharing this conversation's DSH model and authentication through the host. Independent mode uses that worker agent's own configured provider. Public workers accept synthetic=true only (fixed connectivity prompt). List pamiya_workers first. Skills selected from pamiya_skills are transferred on demand and checked before execution. needs_preparation means the agent has not run: show the missing items and use pamiya_task operation=prepare when the user requests Prepare and continue. Resume using sessionRef returned by the previous task; never silently substitute a host tool.",
     parameters: {
       type: "object",
       properties: {
@@ -454,6 +548,18 @@ export async function apply(ctx, config = {}) {
         modelSource: { type: "string", enum: ["inherit", "independent"] },
         sessionRef: { type: "string" },
         timeoutSeconds: { type: "integer", minimum: 10, maximum: 3600 },
+        skills: {
+          type: "array",
+          items: { type: "string" },
+          maxItems: 8,
+          description:
+            "Skill IDs from pamiya_skills. Omit to retain pinned Skills when resuming a session, or follow this worker/agent default for new sessions; [] runs without managed Skills.",
+        },
+        installDependencies: {
+          type: "boolean",
+          description:
+            "Use true when the user requests preparing/installing declared dependencies. Otherwise missing dependencies return needs_preparation with a Prepare and continue action.",
+        },
       },
       required: ["agent"],
       additionalProperties: false,
@@ -476,12 +582,15 @@ export async function apply(ctx, config = {}) {
   ctx.tools.register({
     name: "pamiya_task",
     description:
-      "Read a Pamiya task, ask its worker for the durable result, or request cancellation. Cancellation is confirmed only by a worker result and does not undo earlier effects.",
+      "Read a Pamiya task, ask its worker for the durable result, or request cancellation. operation=prepare resumes a needs_preparation task on the same worker using the pinned Skill versions and installs declared dependencies; use when the user asks to Prepare and continue. Cancellation is confirmed only by a worker result and does not undo earlier effects.",
     parameters: {
       type: "object",
       properties: {
         taskId: { type: "string" },
-        operation: { type: "string", enum: ["read", "query", "cancel"] },
+        operation: {
+          type: "string",
+          enum: ["read", "query", "cancel", "prepare"],
+        },
       },
       required: ["taskId"],
       additionalProperties: false,
@@ -493,6 +602,7 @@ export async function apply(ctx, config = {}) {
       const task = controller.state.tasks.find((item) => item.id === id);
       if (!task) throw new Error("Task not found");
       if (args.operation === "cancel") return controller.cancel(id);
+      if (args.operation === "prepare") return controller.continueTask(id);
       if (args.operation === "query")
         await controller.send(task.workerId, "query", {}, id);
       return controller.state.tasks.find((item) => item.id === id);

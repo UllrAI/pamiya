@@ -1,101 +1,74 @@
-![Pamiya — Distributed agent runtime](assets/brand/banner.png)
+![Pamiya](assets/brand/banner.png)
 
 **English** · [简体中文](README.zh-CN.md)
 
-Pamiya is a **personal Agent for ongoing work**: express a goal, provide context, let it advance the work, and refine a useful result together. Its architecture connects cloud services, desktops, enterprise networks, and devices through a logically centralized Control Plane, durable State Plane, and heterogeneous Execution Network.
+**Let DSH take the capabilities you need to the right computer.**
 
-**DSH plugin 0.2 · Interaction prototype 0.2 · Architecture baseline 0.1.** The plugin uses real MQTT and Workers. The standalone prototype remains a simulation, and platform extension proposals are distinct from implemented capabilities.
+Pamiya is a DeepSeek Harness (DSH) plugin. Keep your conversation, model and artifacts in DSH while delegating work to local or remote DSH, Codex, Claude Code and Pi agents, or calling your own script actions.
 
-## Install into DSH
+## Skills travel with the task
 
-[Self-service quickstart](docs/en/quickstart.md) · [Give this document to DSH](docs/en/install-with-dsh.md) · [All installation options](INSTALL.md)
+A Skill should bring more than a prompt when work moves to another computer. Pamiya **transfers complete Skills on demand, checks dependencies, then prepares and continues the original task**:
 
-Open **Plugins → Add plugin** in DSH, paste this URL, install and enable:
+1. Name a worker and Skill in conversation, or open **Pamiya → worker → Skills**.
+2. Transfer `SKILL.md`, scripts and resources; check declared commands, environment variables, Node/Python packages and platform requirements.
+3. Missing items produce a clear **Needs preparation** state. Choose **Prepare and continue** to install supported dependencies in an isolated worker environment and continue the same task.
+4. The native Agent uses the prepared capability; progress, results and callbacks return to the original conversation.
+
+Remote Skill files use HTTPS relay storage, so Host and Worker need outbound access only. MQTT carries small file references. Content is cached by version, avoiding repeat transfers. Existing sessions keep their pinned version; new tasks can use updates. Local Skills, worker-owned Skills and model authentication keep separate ownership, without copying an entire user profile.
+
+[Skills guide and dependency manifest](docs/en/skills.md) · [Guided S3 setup](docs/en/file-storage.md) · [Recorded verification](docs/en/dsh-verification.md)
+
+## What else is included
+
+| Capability | Experience |
+|---|---|
+| This computer is a worker | Joins automatically over local IPC; no MQTT setup required |
+| Choose a computer in conversation | Select it beside the composer, or say where to run the task |
+| Four complete Agents | DSH, Codex, Claude Code and Pi keep their native tools and execution loops, with session continuation |
+| Share your model by default | Use the DSH model channel, or select independent configuration per worker Agent |
+| Define your own capabilities | Expose script actions with input schemas for the Agent to call |
+| Follow work through completion | Durable progress, business-result acknowledgements, cancellation and reconciliation; completion returns to the original conversation |
+
+## Start in minutes
+
+In DSH, open **Plugins → Add plugin**, paste this URL, install and enable:
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.0.tgz
 ```
 
-The prebuilt Desktop plugin needs no Git, source checkout or separate Node.js. Open **Pamiya**; this computer joins through the local channel without MQTT. Configure MQTT when adding remote computers. [Full usage and implementation guide](docs/en/dsh-plugin.md).
+Desktop installation needs no Git, source checkout or separate Node.js. Open **Pamiya** to use this computer. Configure MQTT when adding another computer, then copy the onboarding command shown in the interface.
 
-<details>
-<summary>Build and install from source</summary>
+To try Skills, open a worker’s **Skills → Run synthetic example**. It uses bundled test resources to show dependency checking, preparation, script execution and real result delivery end to end.
 
-From this repository root, with Node.js 22.19 or newer:
+[Self-service quickstart](docs/en/quickstart.md) · [Give this document to DSH](docs/en/install-with-dsh.md) · [All installation options](INSTALL.md) · [Agents and custom actions](docs/en/agent-workers.md)
 
-```sh
-npm ci
-node scripts/install-dsh-plugin.mjs --demo
-```
+## Current boundaries
 
-`--demo` explicitly enables first-time public RunMQTT setup and a local connection check. Local tasks need no broker; use a private connection for real remote files and commands.
+Current release: **plugin 0.3 preview**. Verified on macOS DSH Desktop and a Linux Worker; Windows still needs physical testing. Dependency checks use the optional `pamiya.json` manifest, rather than inferring every requirement from free-form instructions. Missing system commands and environment variables produce actionable checks. MCP, plugins, personal credentials and project files do not migrate automatically with a Skill.
 
-</details>
+Public RunMQTT is for built-in synthetic validation only. Use a private connection for personal Skills and real remote tasks. Local work does not pass through MQTT.
 
-![Pamiya in DSH: two real workers](packages/dsh-plugin/design/two-workers.en.png)
+## Documents and architecture
 
-[Recorded verification and pending checks](docs/en/dsh-verification.md).
+[Plugin usage and implementation](docs/en/dsh-plugin.md) · [Architecture reading guide](docs/en/README.md) · [Requirements and interaction](docs/product/en/README.md) · [Standalone interaction prototype](prototype/README.md)
 
-## Product and prototype
-
-Start with the [requirements and interaction documents](docs/product/en/README.md), the [Chinese edition](docs/product/zh-CN/README.md), or the [runnable prototype](prototype/README.md). They cover conversation, autonomous progress, editable artifacts, recovery, connections, memory, and continuing responsibilities.
-
-![Pamiya Agent home](prototype/design/implemented-home.png)
-
-The home stays quiet and direct. Activity and artifacts appear in context; infrastructure and task tracking support the experience. See the [visual QA](prototype/design-qa.md) for verification and simulation limits.
-
-[Open-source foundation review](docs/product/en/open-source-foundation.md): first validate a Pamiya extension bundle inside DSH, reusing its Agent and UI; the prototype is an experience reference, not a reason to rebuild the runtime.
-
-## Start with a small, complete baseline
-
-The DSH plugin uses one Host, multiple Workers and existing Host persistence. The architecture below describes distributed deployment; it is not a mandatory stack for installing the plugin.
-
-One active coordinator advances each Session serially. Multiple Workers connect outbound; each stateful device or Environment has a fixed execution owner. PostgreSQL stores intent, Attempts, results, and checkpoints. MQTT carries small commands/events; HTTPS and object storage carry files.
-
-Keep durable Task/Attempt tracking, business result acknowledgement, deduplication, identity and scope checks, short-task validity, cancellation records, and reconciliation of uncertain important effects. Existing authorization covers ordinary work. Resource fencing, renewable leases, signed grants, and spending reservations enter when their requirements appear.
+The plugin uses one DSH Host, durable tasks and multiple Workers. The diagram describes a scalable platform architecture; PostgreSQL and object storage are not prerequisites for installing the plugin. The standalone prototype remains a simulation, with platform proposals documented separately from runtime capabilities.
 
 ![Pamiya architecture at a glance](assets/diagrams/readable-overview.en.png)
 
-[View SVG](assets/diagrams/readable-overview.en.svg) · [Layout source](scripts/render_readable_architecture.py)
+[Detailed architecture](assets/diagrams/baseline-architecture.en.png) · [Editable architecture diagrams](assets/diagrams/README.md) · [Scope and decisions](docs/en/scope-and-decisions.md)
 
-<details>
-<summary>View the detailed connection map</summary>
+## Run from source
 
-![Pamiya platform architecture](assets/diagrams/baseline-architecture.en.png)
+Requires Node.js 22.19 or newer:
 
-[View SVG](assets/diagrams/baseline-architecture.en.svg) · [Editable Mermaid](assets/diagrams/baseline-architecture.en.mmd)
+```sh
+npm ci
+node scripts/install-dsh-plugin.mjs
+npm run plugin:test
+npm run docs:check
+```
 
-</details>
-
-## Read the architecture
-
-| Document | Covers |
-|---|---|
-| [Reading guide](docs/en/README.md) | Baseline, terminology, and reading order |
-| [Architecture patterns](docs/en/architecture-patterns.md) | Harness/execution/state separation and MQTT fit |
-| [Platform architecture](docs/en/platform-architecture.md) | Modules, domain model, environments, and event activation |
-| [Capabilities and protocol](docs/en/capabilities-and-protocol.md) | Discovery, MQTT Topics, JSON contracts, artifacts, and delegation |
-| [Reliability](docs/en/reliability.md) | Delivery, recovery, retries, cancellation, and failure acceptance |
-| [Technology and roadmap](docs/en/technology-and-roadmap.md) | BifroMQ, optional Tenon, ESP32 integration, standards, and phases |
-| [Scope and decisions](docs/en/scope-and-decisions.md) | Required boundaries and conditional complexity |
-
-The [Chinese set](docs/zh-CN/README.md) follows the same structure and uses identical machine-readable examples. Both sets distinguish proposed platform contracts from external standards and verified third-party capabilities.
-
-## Two execution semantics
-
-| Tool execution | Agent delegation |
-|---|---|
-| Receives a concrete operation | Receives a goal |
-| Parent harness decides the next step | Specialist Agent owns its loop |
-| Worker reports Task/Attempt state | Adapter tracks the remote task and its limits |
-| Example: browser capture or bound-device HID | Example: a coding or research task |
-
-Always-on responsibilities use durable events, simple rules, and on-demand activation. They do not require continuous model execution. MQTT is the preferred remote Worker transport; HTTP, MCP, and A2A remain available through adapters.
-
-## Maintain the documents
-
-[Contributing](CONTRIBUTING.md) explains bilingual updates, local checks, and diagram rendering. [Visual assets](assets/brand/README.md) records the banner, social preview, palette, and generation prompt; [diagram sources](assets/diagrams/README.md) remain editable.
-
-Released under [Apache-2.0](LICENSE).
-
-[Agents, model sharing and custom actions](docs/en/agent-workers.md).
+[Contributing](CONTRIBUTING.md) · [Visual assets](assets/brand/README.md) · [Apache-2.0](LICENSE)

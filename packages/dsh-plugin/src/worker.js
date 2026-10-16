@@ -6,6 +6,8 @@ import {
   runProcess,
 } from "./capabilities.js";
 import { runAgent } from "./agent-runtime.js";
+import { downloadSkill } from "./file-download.js";
+import { prepareSkills } from "./skills.js";
 import { ModelChannel } from "./model-channel.js";
 import { randomUUID } from "node:crypto";
 import {
@@ -210,6 +212,7 @@ export async function startWorker(
     chain = next.catch(() => {});
     return next;
   };
+  let skillState = await loadJson(resolve(directory, "skills-state.json"), {});
   const active = new Map(),
     jobs = new Set();
   const publicTest = !transport && config.broker.publicTest;
@@ -254,6 +257,9 @@ export async function startWorker(
   const models = new ModelChannel({
     send: (frame, id) => publish("model", frame, id),
   });
+  const skillChannel = new ModelChannel({
+    send: (frame, id) => publish("files", frame, id),
+  });
   const status = () =>
     publish("status", {
       label: config.label,
@@ -270,6 +276,13 @@ export async function startWorker(
             }),
           ),
       agents: agents.map(({ command, ...agent }) => agent),
+      skillSyncVersion: 2,
+      skillSelections: Object.fromEntries(
+        Object.entries(skillState).map(([agent, value]) => [
+          agent,
+          value.skills.map(({ id, name, hash }) => ({ id, name, hash })),
+        ]),
+      ),
       capacity: 1,
       active: active.size,
     });
@@ -289,15 +302,29 @@ export async function startWorker(
       await publish("result", payload, taskId);
     }
   }
-  async function dispatch(message) {
+  async function dispatch(message, continuing = false) {
     if (!message.taskId) return;
     const id = message.taskId;
-    if (journal[id]) {
+    if (
+      journal[id] &&
+      !(continuing && journal[id].status === "needs_preparation")
+    ) {
       if (journal[id].status === "running") await publish("accepted", {}, id);
       else await sendResult(id);
       return;
     }
-    const { action, input, deadline } = message.payload ?? {};
+    let { action, input, deadline } = message.payload ?? {};
+    if (continuing) {
+      if (
+        message.payload.preparationRevision !==
+        (journal[id].preparationRevision ?? 0) + 1
+      ) {
+        await sendResult(id);
+        return;
+      }
+      action = journal[id].action;
+      input = { ...journal[id].input, installDependencies: true };
+    }
     if (
       message.bootId !== bootId ||
       !Number.isFinite(deadline) ||
@@ -331,13 +358,84 @@ export async function startWorker(
     }
     const abort = new AbortController();
     active.set(id, abort);
-    journal[id] = { status: "running", action, bootId, startedAt: Date.now() };
+    journal[id] = {
+      ...journal[id],
+      status: "running",
+      preparationRevision: continuing ? message.payload.preparationRevision : 0,
+      acknowledged: false,
+      result: undefined,
+      error: undefined,
+      finishedAt: undefined,
+      action,
+      input,
+      bootId,
+      startedAt: journal[id]?.startedAt ?? Date.now(),
+    };
+    let preparingSkills =
+      ["agent.run", "agent.demo", "skills.prepare"].includes(action) &&
+      Boolean(validated.skills?.length);
     try {
       await save();
       await publish("accepted", {}, id);
       await status();
-      let result;
-      if (action === "worker.inspect") {
+      let result, preparation;
+      if (
+        ["agent.run", "agent.demo", "skills.prepare"].includes(action) &&
+        validated.skills?.length
+      ) {
+        if (validated.skills.some((ref) => typeof ref === "string"))
+          throw new Error("Host 未提供 Skill 快照，请更新插件");
+        const preparationSignal = AbortSignal.any([
+          abort.signal,
+          AbortSignal.timeout(1200000),
+        ]);
+        preparation = await prepareSkills({
+          directory,
+          refs: validated.skills,
+          agent: validated.agent,
+          install: validated.installDependencies,
+          publicTest,
+          signal: preparationSignal,
+          fetchBundle: async (hash, signal) =>
+            downloadSkill(await skillChannel.request({ hash }, id, signal), {
+              hash,
+              signal,
+              key: config.key,
+              local: Boolean(transport),
+            }),
+          progress: (event) => {
+            void publish("progress", event, id).catch(() => {});
+          },
+        });
+        if (!preparation.report.ready) {
+          journal[id] = {
+            ...journal[id],
+            status: "needs_preparation",
+            result: { preparation: preparation.report },
+            error: "能力需要准备，Agent 尚未启动",
+            finishedAt: Date.now(),
+          };
+          await save();
+          await sendResult(id);
+          return;
+        }
+      }
+      preparingSkills = false;
+      if (action === "skills.prepare") {
+        const report = preparation?.report ?? {
+          ready: true,
+          agent: validated.agent,
+          skills: [],
+          checks: [],
+          missing: [],
+          notes: [],
+        };
+        if (validated.installDependencies) {
+          skillState[validated.agent] = report;
+          await atomicJson(resolve(directory, "skills-state.json"), skillState);
+        }
+        result = { preparation: report };
+      } else if (action === "worker.inspect") {
         await refreshCapabilities();
         result = {
           capabilities: publicTest
@@ -353,6 +451,7 @@ export async function startWorker(
               }
             : capabilities,
           agents: agents.map(({ command, ...agent }) => agent),
+          skillSelections: skillState,
         };
       } else if (action === "worker.configure") {
         capabilities = parseCapabilities(validated.capabilities);
@@ -440,6 +539,7 @@ export async function startWorker(
           publicTest,
           signal: abort.signal,
           modelCall: (request, signal) => models.request(request, id, signal),
+          preparation,
           progress: (event) => {
             void publish("progress", event, id).catch(() => {});
           },
@@ -482,19 +582,52 @@ export async function startWorker(
     } catch (error) {
       journal[id] = {
         ...journal[id],
-        status: abort.signal.aborted
-          ? action === "shell.run" ||
-            action === "fs.write" ||
-            action.startsWith("custom.") ||
-            action.startsWith("agent.")
-            ? "unknown"
-            : "cancelled"
-          : "failed",
-        error: errorText(error),
+        status: preparingSkills
+          ? abort.signal.aborted
+            ? "cancelled"
+            : "needs_preparation"
+          : abort.signal.aborted
+            ? action === "shell.run" ||
+              action === "fs.write" ||
+              action.startsWith("custom.") ||
+              action.startsWith("agent.")
+              ? "unknown"
+              : "cancelled"
+            : "failed",
+        ...(preparingSkills && !abort.signal.aborted
+          ? {
+              result: {
+                preparation: {
+                  ready: false,
+                  agent: validated.agent,
+                  skills: validated.skills,
+                  checks: [],
+                  notes: [],
+                  missing: [
+                    {
+                      kind: errorText(error).includes(
+                        "PAMIYA_FILE_STORAGE_REQUIRED",
+                      )
+                        ? "storage"
+                        : "preparation",
+                      name: "Skill preparation",
+                      installable: false,
+                      message: errorText(error).replace(
+                        "[PAMIYA_FILE_STORAGE_REQUIRED] ",
+                        "",
+                      ),
+                    },
+                  ],
+                },
+              },
+            }
+          : {}),
+        error: errorText(error).replace("[PAMIYA_FILE_STORAGE_REQUIRED] ", ""),
         finishedAt: Date.now(),
       };
     } finally {
       active.delete(id);
+      void status().catch(() => {});
     }
     await save();
     await sendResult(id);
@@ -509,22 +642,39 @@ export async function startWorker(
     } catch {
       return;
     }
+    if (message.kind === "files") {
+      if (active.has(message.taskId))
+        void skillChannel.receive(message.payload, message.taskId);
+      return;
+    }
     if (message.kind === "model") {
       if (active.has(message.taskId))
         void models.receive(message.payload, message.taskId);
       return;
     }
     if (message.kind === "cancel") {
+      if (journal[message.taskId]?.status === "needs_preparation") {
+        journal[message.taskId] = {
+          ...journal[message.taskId],
+          status: "cancelled",
+          error: "已取消准备；Agent 尚未启动",
+          finishedAt: Date.now(),
+        };
+        void save()
+          .then(() => sendResult(message.taskId))
+          .catch(() => {});
+        return;
+      }
       active.get(message.taskId)?.abort();
       if (!active.has(message.taskId))
         void sendResult(message.taskId).catch(() => {});
       return;
     }
-    if (message.kind === "dispatch") {
+    if (message.kind === "dispatch" || message.kind === "continue") {
       incoming = incoming
         .then(() => {
-          const job = dispatch(message).catch((error) =>
-            onState({ status: "error", error: errorText(error) }),
+          const job = dispatch(message, message.kind === "continue").catch(
+            (error) => onState({ status: "error", error: errorText(error) }),
           );
           jobs.add(job);
           void job.finally(() => jobs.delete(job));
@@ -534,7 +684,12 @@ export async function startWorker(
     if (message.kind === "query") {
       void sendResult(message.taskId).catch(() => {});
     }
-    if (message.kind === "resultAck" && journal[message.taskId]) {
+    if (
+      message.kind === "resultAck" &&
+      journal[message.taskId] &&
+      (message.payload?.preparationRevision ?? 0) ===
+        (journal[message.taskId].preparationRevision ?? 0)
+    ) {
       journal[message.taskId].acknowledged = true;
       void save().catch((error) =>
         onState({ status: "error", error: errorText(error) }),
@@ -581,6 +736,7 @@ export async function startWorker(
       for (const abort of active.values()) abort.abort();
       await Promise.allSettled([...jobs]);
       models.close();
+      skillChannel.close();
       await client.endAsync(true);
       await chain;
     },

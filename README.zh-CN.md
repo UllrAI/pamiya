@@ -1,101 +1,74 @@
-![Pamiya — 分布式 Agent 运行平台](assets/brand/banner.png)
+![Pamiya](assets/brand/banner.png)
 
 [English](README.md) · **简体中文**
 
-Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提供上下文，让它自主推进，再一起完善可使用的成果。底层通过逻辑集中的 Control Plane、持久化 State Plane 和异构 Execution Network，协调云端、桌面、企业内网与设备上的工作。
+**让 DSH 带着你需要的能力，在合适的电脑上完成工作。**
 
-**DSH 插件 0.2 · 产品交互原型 0.2 · 架构基线 0.1。** 插件使用真实 MQTT 与 Worker；独立原型仍是模拟，分布式平台的扩展提案不等于已实现。
+Pamiya 是 DeepSeek Harness（DSH）的插件。沿用熟悉的对话、模型和成果界面，把任务交给本机或远端的 DSH、Codex、Claude Code、Pi，也能调用用户定义的脚本动作。
 
-## 安装到 DSH
+## 能力跟着任务走
 
-[用户自助安装](docs/zh-CN/quickstart.md) · [交给 DSH 代装](docs/zh-CN/install-with-dsh.md) · [全部安装入口](INSTALL.md)
+在本机装好的 Skill，换到另一台电脑时不应只剩一段提示词。Pamiya **按需同步完整 Skill，检查依赖，准备好后继续原任务**：
 
-在 DSH 中打开 **插件 → 添加插件**，粘贴以下地址，安装并启用：
+1. 在对话中指定节点和 Skill，或打开 **Pamiya → 节点 → Skills**。
+2. 同步 `SKILL.md`、脚本与资源；检查声明的命令、环境变量、Node/Python 依赖及平台要求。
+3. 有缺项时明确显示“需要准备”。选择 **准备并继续**，在节点的独立环境安装可准备的依赖，然后继续同一个任务。
+4. Agent 使用同步的能力执行工作；进度、结果和回调回到原对话。
+
+远端 Skill 文件走 HTTPS 中转，双方只需出站连接，MQTT 只传小型文件引用。内容按版本缓存，同一版本无需重复传输；已有会话固定使用原版本，新任务才采用更新。本地 Skill、远端 Skill、模型鉴权各自有清晰的归属，无需复制整份用户配置。
+
+[Skills 完整使用指南与依赖声明](docs/zh-CN/skills.md) · [S3 首次配置引导](docs/zh-CN/file-storage.md) · [实际验收记录](docs/zh-CN/dsh-verification.md)
+
+## 还有什么
+
+| 能力 | 使用体验 |
+|---|---|
+| 本机即节点 | 安装后自动加入，通过本地 IPC 工作；不必先配置 MQTT |
+| 对话选择电脑 | 输入框中选择节点，也可直接说要在哪台电脑执行 |
+| 四种完整 Agent | DSH、Codex、Claude Code、Pi 保留自己的工具和执行循环，支持会话续接 |
+| 默认复用模型 | 通过 DSH 共享模型通道；也可为节点上的 Agent 选择独立配置 |
+| 自定义能力 | 声明脚本动作和输入 schema，供 Agent 调用 |
+| 任务有着落 | 持久化进度、业务结果确认、停止与核对；完成后回到原对话 |
+
+## 几分钟开始
+
+在 DSH 的 **插件 → 添加插件** 中粘贴，安装并启用：
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.0.tgz
 ```
 
-预构建桌面插件不需要 Git、源码或额外安装 Node.js。打开 **Pamiya**，本机通过本地通道自动加入；远端接入时再配置 MQTT。[完整使用与实现说明](docs/zh-CN/dsh-plugin.md)。
+桌面安装不需要 Git、源码或额外的 Node.js。打开 **Pamiya** 即可使用本机；添加其他电脑时再配置 MQTT，并复制界面给出的接入命令。
 
-<details>
-<summary>从源码构建安装</summary>
+第一次体验 Skills，可打开节点的 **Skills → 运行合成示例**。示例只使用内置测试资源，能看到依赖检查、准备、脚本执行和真实回传全过程。
 
-在仓库根目录执行，需要 Node.js 22.19 或更新版本：
+[自助上手](docs/zh-CN/quickstart.md) · [交给 DSH 代装](docs/zh-CN/install-with-dsh.md) · [全部安装方式](INSTALL.md) · [Agent 与自定义动作](docs/zh-CN/agent-workers.md)
 
-```sh
-npm ci
-node scripts/install-dsh-plugin.mjs --demo
-```
+## 当前边界
 
-`--demo` 显式启用首次 RunMQTT 公共测试配置并检查本机节点；本机不依赖 MQTT，远端个人文件和命令使用自有私有连接。
+当前发布 **插件 0.3 预览版**。macOS DSH 桌面和 Linux Worker 已实际验收；Windows 实机待验收。Skills 依赖检查依据可选 `pamiya.json`，不会从任意自然语言说明中推断所有依赖。系统命令和环境变量缺失会给出明确处理项；MCP、插件、个人凭据和项目文件不随 Skill 自动迁移。
 
-</details>
+公共 RunMQTT 仅用于内置合成验证。个人 Skills 和真实远端任务使用私有连接；本机工作不经过 MQTT。
 
-![DSH 中的 Pamiya：本机与远端真实节点](packages/dsh-plugin/design/two-workers.zh-CN.png)
+## 文档与架构
 
-[实际验收与待完成检查](docs/zh-CN/dsh-verification.md)。
+[插件使用与实现](docs/zh-CN/dsh-plugin.md) · [架构阅读指南](docs/zh-CN/README.md) · [需求与交互](docs/product/zh-CN/README.md) · [独立交互原型](prototype/README.md)
 
-## 产品与原型
-
-从[需求与交互文档](docs/product/zh-CN/README.md)、[英文版](docs/product/en/README.md)或[可运行原型](prototype/README.md)开始。内容覆盖对话、自主推进、成果编辑、恢复、连接、记忆与持续承担。
-
-![Pamiya Agent 首页](prototype/design/implemented-home.png)
-
-首页保持安静、直接；活动与成果按需展开，基础设施与任务跟踪支撑这段体验。[视觉 QA](prototype/design-qa.md)记录实际验证与模拟边界。
-
-[开源基座评审](docs/product/zh-CN/open-source-foundation.md)：优先验证 DSH 上的 Pamiya 插件/扩展包，复用原生 Agent 与界面；当前原型用于表达体验，不作为从零重建运行时的理由。
-
-## 从小而完整的首版开始
-
-DSH 插件以一个 Host、多个 Worker 和宿主现有持久化实现。下文架构描述分布式部署，不是安装插件必须具备的整套设施。
-
-一个活跃协调者串行推进每个 Session；多个 Worker 主动建立出站连接，每个有状态设备或 Environment 有固定执行归属。PostgreSQL 保存意图、Attempt、结果和检查点，MQTT 传递小型命令与事件，HTTPS 和对象存储承担文件数据通道。
-
-首版保留 Task/Attempt 持久化、业务结果确认、去重、身份与范围检查、短任务时限、取消记录，以及未知重要效果的核对。普通工作沿用已有授权；资源 fencing、续租、签名授权和预算预留在相应需求出现时引入。
+插件使用一个 DSH Host、持久化任务和多个 Worker。下图描述可扩展的平台架构；PostgreSQL、对象存储等不是安装插件的前置条件。独立原型仍为模拟，平台扩展提案与运行能力分别记录。
 
 ![Pamiya 架构阅读总览](assets/diagrams/readable-overview.zh-CN.png)
 
-[查看 SVG](assets/diagrams/readable-overview.zh-CN.svg) · [布局源码](scripts/render_readable_architecture.py)
+[详细架构图](assets/diagrams/baseline-architecture.zh-CN.png) · [可编辑架构图](assets/diagrams/README.md) · [范围与取舍](docs/zh-CN/scope-and-decisions.md)
 
-<details>
-<summary>查看详细连接图</summary>
+## 从源码运行
 
-![Pamiya 平台总体架构](assets/diagrams/baseline-architecture.zh-CN.png)
+需要 Node.js 22.19 或更新版本：
 
-[查看 SVG](assets/diagrams/baseline-architecture.zh-CN.svg) · [可编辑 Mermaid](assets/diagrams/baseline-architecture.zh-CN.mmd)
+```sh
+npm ci
+node scripts/install-dsh-plugin.mjs
+npm run plugin:test
+npm run docs:check
+```
 
-</details>
-
-## 阅读完整架构
-
-| 文档 | 内容 |
-|---|---|
-| [阅读指南](docs/zh-CN/README.md) | 首版基线、术语和阅读顺序 |
-| [架构形态](docs/zh-CN/architecture-patterns.md) | Harness、执行、状态分离与 MQTT 的适用范围 |
-| [平台架构](docs/zh-CN/platform-architecture.md) | 模块、核心模型、环境与事件激活 |
-| [能力与协议](docs/zh-CN/capabilities-and-protocol.md) | 发现、MQTT Topic、JSON 契约、产物与委托 |
-| [可靠执行](docs/zh-CN/reliability.md) | 投递、恢复、重试、取消与故障验收 |
-| [技术与路线](docs/zh-CN/technology-and-roadmap.md) | BifroMQ、可选 Tenon、ESP32、标准与实施阶段 |
-| [范围与取舍](docs/zh-CN/scope-and-decisions.md) | 必须保留的边界及条件增强机制 |
-
-[英文文档](docs/en/README.md) 与中文版逐章对应，机器可读示例完全一致。两种语言都区分平台提案、外部标准和已经核实的第三方能力。
-
-## 两种执行语义
-
-| 工具执行 | Agent 委托 |
-|---|---|
-| 接收具体操作 | 接收目标 |
-| 父 Harness 决定下一步 | 专业 Agent 自主推进循环 |
-| Worker 上报 Task/Attempt 状态 | Adapter 跟踪远程任务及其限制 |
-| 例如浏览器截图、绑定设备 HID | 例如开发或研究任务 |
-
-Always-on 职责通过持久化事件、简单规则和按需激活实现，无需持续调用模型。MQTT 是远程 Worker 的首选传输，HTTP、MCP 和 A2A 通过适配器接入。
-
-## 维护文档
-
-[贡献说明](CONTRIBUTING.md) 提供双语维护、检查和架构图渲染方法。[视觉资产说明](assets/brand/README.md) 记录 banner、分享图、配色与生成提示词；[架构图源码](assets/diagrams/README.md) 保持可编辑。
-
-采用 [Apache-2.0](LICENSE) 许可。
-
-[Agent、模型复用与自定义动作](docs/zh-CN/agent-workers.md)。
+[贡献说明](CONTRIBUTING.md) · [视觉资产](assets/brand/README.md) · [Apache-2.0](LICENSE)

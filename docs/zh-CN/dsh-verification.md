@@ -64,3 +64,24 @@ Windows/其他桌面系统的进程行为仍待验收。真实模型测试使用
 - RunMQTT 测试账号已刷新，本机与 Linux 配对身份和执行日志保留；没有新增私有 Broker 或开放服务器端口。
 
 本轮未使用第三方个人独立登录账号、未在 Windows 实机验收，也未用公共连接执行真实业务文件或自由 Agent 任务。共享模型接口当前接收文本和工具调用，专有媒体/托管工具使用 Agent 独立配置；详情见[Agent 使用说明](agent-workers.md)。
+
+## Skills 按需准备与 HTTPS 文件通道（v0.3.0）
+
+2026-10-16，在原生 DSH 桌面与现有 Linux Worker 上完成：
+
+- 节点界面运行内置 Skill：从固定 GitHub 提交的 HTTPS 地址下载完整包，发现缺少 `pamiya-synthetic-helper`，进入“需要准备”；点击“准备并继续”后安装包内依赖，同一任务由 DSH 读取 Skill、资源和执行脚本，返回真实 proof。
+- 对话先调用 `pamiya_skills list`，再委派 Linux DSH。缺项回调返回对话，等待用户；用户说“准备并继续”，原 Task ID `2c5ea05d-d34a-4497-acd5-785997bd94ab` 最终成功，准备阶段序号为 1，结果已获 ACK。
+- Codex、Claude Code、Pi 随后在同一 Linux 节点顺序执行同一 Skill，三项均成功；实际返回 `PAMIYA_SKILL_OK:48656c6c6f2050616d697961`，均收到业务结果确认。Claude Code 的原生权限检查正常完成，没有关闭其权限机制。
+- 首次真实 DSH 工具回传暴露共享模型消息缺少顶层工具调用 ID；修复后通过界面和对话重测，首次失败记录保留。
+- 36 项自动化全部通过，包括四种真实 CLI 加载 Skill、读取资源、运行脚本，标准无扩展 manifest 的 Skill、完整目录/可执行位、版本缓存、CJS/ESM 依赖、Host 重启、同 Task 继续、旧结果与 ACK 隔离，以及缺少存储时真实 MQTT Worker 等待配置与取消。
+- S3 自动化使用官方 SDK 和受控对象存储适配器：3 MB Skill 加密上传、签名 HTTPS 引用、解密和哈希校验；连接配置先验证签名下载再保存，失败不替换有效配置。没有将 Skill 文件体塞入 MQTT。
+
+![Skills 缺项与准备入口](../../packages/dsh-plugin/design/skills-prepare.zh-CN.png)
+
+![远端 Agent 的实际结果](../../packages/dsh-plugin/design/skills-agents.zh-CN.png)
+
+本次真实远端测试只使用公开的固定合成文件，不涉及个人 Skills、云存储密钥或真实业务文件。私人 S3 Bucket 尚未在用户环境配置，跨厂商存储兼容性和私人 Bucket 的实机读写不能由上述适配器测试替代。首次配置入口见[文件存储指南](file-storage.md)。
+
+S3 首次配置引导已在原生 DSH 检查准备说明、连接表单与非法端点错误；错误后保留表单，关闭后仍显示未配置。没有保存合成密钥。另通过真实 Python venv 和依赖所提供命令的自动化检查。
+
+本机 Worker 也已在原生界面完成合成 Skill 的缺依赖检查、准备并继续和实际脚本回传；使用本地快照读取，不经过 MQTT 或 S3。

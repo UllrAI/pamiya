@@ -82,6 +82,7 @@ export async function runAgent({
   signal,
   modelCall,
   progress = () => {},
+  preparation,
 }) {
   if (!agent?.installed || !agent.enabled)
     throw new Error("请先在该电脑安装并启用所选 Agent");
@@ -111,6 +112,15 @@ export async function runAgent({
   }
   if (publicTest && session.modelSource !== "inherit")
     throw new Error("公共合成验证请复用 DSH 模型；独立鉴权留在私有连接使用");
+  const skillHashes = (preparation?.paths ?? []).map((ref) => ref.hash).sort();
+  if (
+    session.skillHashes &&
+    JSON.stringify(session.skillHashes) !== JSON.stringify(skillHashes)
+  )
+    throw new Error(
+      "续接会话的 Skill 版本已变化，请使用原版本或新建 Agent 会话",
+    );
+  session.skillHashes = skillHashes;
   const ownedHome = resolve(root, sessionRef);
   await mkdir(ownedHome, { recursive: true, mode: 0o700 });
   const cwd = demo ? resolve(ownedHome, "sandbox") : workspace;
@@ -142,8 +152,9 @@ export async function runAgent({
     : null;
   const model = inherit ? input.modelRoute.model : agent.model;
   const env = {
+    ...preparation?.env,
     PAMIYA_MODEL_TOKEN: gateway?.token ?? "",
-    PATH: `${resolve(process.execPath, "..")}${process.platform === "win32" ? ";" : ":"}${process.env.PATH ?? ""}`,
+    PATH: `${resolve(process.execPath, "..")}${process.platform === "win32" ? ";" : ":"}${preparation?.env?.PATH ?? process.env.PATH ?? ""}`,
   };
   let args;
   if (agent.id === "dsh") {
@@ -213,7 +224,21 @@ export async function runAgent({
       });
     if (model) args.push("--model", model);
     if (session.nativeId) args.push("--resume", session.nativeId);
-    if (demo) args.push("--tools", "", "--strict-mcp-config");
+    if (demo && !preparation?.paths.length)
+      args.push("--tools", "", "--strict-mcp-config");
+    if (preparation?.paths.length)
+      args.push("--add-dir", ...preparation.paths.map((skill) => skill.path));
+    if (demo && preparation?.paths.length) {
+      const file = resolve(preparation.paths[0].path, "scripts/check.cjs");
+      args.push(
+        "--tools",
+        "Read,Bash",
+        "--allowedTools",
+        `Bash(node ${file})`,
+        "Read",
+        "--strict-mcp-config",
+      );
+    }
   } else {
     args = [
       "--print",
@@ -245,13 +270,10 @@ export async function runAgent({
       args.push("--provider", "pamiya");
     } else if (agent.provider) args.push("--provider", agent.provider);
     if (model) args.push("--model", model);
-    if (demo)
-      args.push(
-        "--no-tools",
-        "--no-extensions",
-        "--no-skills",
-        "--no-prompt-templates",
-      );
+    if (demo) {
+      args.push("--no-extensions", "--no-skills", "--no-prompt-templates");
+      if (!preparation?.paths.length) args.push("--no-tools");
+    }
   }
   for (const key of [
     "DSH_HOME",
@@ -260,6 +282,19 @@ export async function runAgent({
     "PI_CODING_AGENT_DIR",
   ])
     if (env[key]) await mkdir(env[key], { recursive: true, mode: 0o700 });
+  const skillInstructions = preparation?.paths.length
+    ? `Selected Pamiya Skills (pinned for this session):\n${preparation.paths.map((skill) => `- ${skill.name}: ${skill.description}\n  Read ${resolve(skill.path, "SKILL.md")} before using it. Resolve its relative files and scripts against ${skill.path}.`).join("\n")}\nUse the prepared dependency environment inherited by this Agent. Follow only these selected skills for the requested work.\n\n`
+    : "";
+  const prompt =
+    demo && preparation?.paths.length
+      ? "This is the fixed Pamiya synthetic Skill validation. Read the selected pamiya-skill-check SKILL.md, read its synthetic assets/sample.json, and execute its scripts/check.cjs with node. Return the exact JSON produced by the script. Do not read personal files, use other skills or access external services."
+      : demo
+        ? SYNTHETIC_PROMPT
+        : input.prompt;
+  const executionPrompt =
+    demo && preparation?.paths.length
+      ? `${prompt} Use this exact shell command, without cd or chaining: node ${resolve(preparation.paths[0].path, "scripts/check.cjs")}`
+      : prompt;
   let final = false,
     error,
     answer = "";
@@ -270,7 +305,7 @@ export async function runAgent({
     const result = await runProcess(agent.command, args, {
       cwd,
       env,
-      input: `${demo ? SYNTHETIC_PROMPT : input.prompt}\n`,
+      input: `${skillInstructions}${executionPrompt}\n`,
       signal,
       timeoutSeconds: input.timeoutSeconds ?? 600,
       logFile,
@@ -326,6 +361,7 @@ export async function runAgent({
       answer: answer.slice(-24000),
       artifacts,
       synthetic: demo,
+      ...(preparation ? { preparation: preparation.report } : {}),
     };
   } finally {
     await json(resolve(root, `${sessionRef}.json`), session);

@@ -10,9 +10,9 @@
 
 ## 安装目标
 
-- 插件包：`@pamiya/dsh-plugin`，版本 `0.2.0`。
-- 发布页：https://github.com/UllrAI/pamiya/releases/tag/v0.2.0
-- 安装 spec：`https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz`
+- 插件包：`@pamiya/dsh-plugin`，版本 `0.3.0`。
+- 发布页：https://github.com/UllrAI/pamiya/releases/tag/v0.3.0
+- 安装 spec：`https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.0.tgz`
 - 已验证宿主：DSH `0.2.0-rc.2`、`0.2.1-alpha.4`。其他版本以宿主的兼容性检查结果为准。
 - 保留已有模型、对话、工作区、其他插件和连接配置。安装此预构建包不需要克隆仓库、构建源码或发布 npm 包。
 
@@ -24,7 +24,7 @@
 ```json
 {
   "action": "install_bundle",
-  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz",
+  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.0.tgz",
   "enabled": true
 }
 ```
@@ -45,3 +45,7 @@
 - 公共连接仅使用合成测试，不发送个人文件。远程节点另行从 Pamiya 配对，不在安装文档中收集或公开凭据。
 
 用户自助操作、远端 Worker 安装与常见问题见[上手指南](quickstart.md)。
+
+## 首次远端 Skills 配置
+
+本机和合成示例不需要文件存储。真实远端 Skills 缺少存储时，引导用户在运行记录中打开任务，点击“配置文件存储”，按[三步引导](file-storage.md)配置 S3 兼容存储。密钥只在设置密码框输入，不请求用户把 Secret 发到对话。成功后“返回并继续”原任务，不另建任务或更换节点。

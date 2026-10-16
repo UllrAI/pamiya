@@ -25,13 +25,9 @@ Commands and full agents run as the worker’s OS user. File-tool directory chec
 
 ## Skills, plugins and worker environments
 
-Cross-worker Skills synchronization is not implemented. **Sharing DSH model/authentication does not share Skills, MCP, plugins, project files or system dependencies.**
+[On-demand Skills, dependency checks and Prepare and continue](skills.md) are implemented for DSH, Codex, Claude Code and Pi. Select complete Skills and resources: local workers read snapshots directly, while remote workers download through HTTPS file relay storage. MQTT carries file references only. Workers check optional `pamiya.json` declarations, prepare installable dependencies in isolated environments, then continue the original task.
 
-- Independent mode uses the worker agent’s native configuration and login; that agent discovers its own Skills.
-- Shared mode uses a Pamiya-managed agent configuration directory without copying Host user-level Skills. Non-test tasks use the specified workspace; project-level Skill discovery follows each native agent’s rules.
-- Public synthetic tests use an isolated empty directory and disable external extensions where supported; they do not validate user Skills.
-
-Recommended future boundary (**not implemented**): let users select Skills, pin their content for each delegation, and install them in the selected agent’s supported paths. Check dependencies/environment separately and bind credentials separately. Do not overwrite same-name worker Skills; present explicit conflict choices. Report offline workers and missing dependencies instead of claiming successful synchronization. A separate plugin marketplace or automatic distribution system is unnecessary for this flow.
+Model/authentication sharing is the default; Skills follow the task selection. MCP, plugins, project files and personal credentials do not migrate automatically. Native worker capabilities remain managed by their Agent.
 
 ## Delegate from a conversation
 

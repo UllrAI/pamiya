@@ -16,6 +16,7 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { randomBytes, randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
+import { SkillCatalog, sampleBundle } from "../src/skills.js";
 import { Controller } from "../src/controller.js";
 import {
   startWorker,
@@ -42,7 +43,7 @@ async function until(check, timeout = 9000) {
   }
   throw new Error("Condition did not settle");
 }
-async function fixture(t, { autoLocal = false } = {}) {
+async function fixture(t, { autoLocal = false, publicTest = true } = {}) {
   const directory = await mkdtemp(resolve(tmpdir(), "pamiya-test-"));
   const broker = await Aedes.createBroker({ maxClientsIdLength: 200 });
   const server = createServer(broker.handle);
@@ -57,9 +58,10 @@ async function fixture(t, { autoLocal = false } = {}) {
     username: "",
     password: "",
     namespace: `sandbox/pamiya/${randomUUID()}`,
-    publicTest: true,
+    publicTest,
   };
   const settings = {
+    skillCatalog: new SkillCatalog({ home: directory }),
     autoLocal,
     store: {
       load: async () => saved,
@@ -551,4 +553,22 @@ test("local access settings take effect after restart without exposing local fil
     /ENOENT/,
   );
   assert.equal(f.controller.children.size, 1);
+});
+
+test("missing file storage pauses a real remote Worker before Agent start and can be cancelled", async (t) => {
+  const f = await fixture(t, { publicTest: false }),
+    one = await f.add("Remote file setup");
+  const task = await f.controller.dispatch({
+    workerId: one.id,
+    action: "skills.prepare",
+    input: { agent: "dsh", skills: [sampleBundle().ref.id] },
+  });
+  const lookup = () => f.controller.state.tasks.find((x) => x.id === task.id);
+  await until(() => lookup().status === "needs_preparation");
+  assert.equal(lookup().result.preparation.missing[0].kind, "storage");
+  assert.match(lookup().result.preparation.missing[0].message, /配置文件/);
+  await f.controller.cancel(task.id);
+  await until(() => lookup().status === "cancelled");
+  const journal = await loadJson(resolve(one.directory, "journal.json"), {});
+  assert.equal(journal[task.id].status, "cancelled");
 });

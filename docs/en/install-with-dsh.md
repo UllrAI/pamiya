@@ -10,9 +10,9 @@ This is a self-contained installation task. A user asking you to follow it autho
 
 ## Installation target
 
-- Package: `@pamiya/dsh-plugin`, version `0.2.0`.
-- Release: https://github.com/UllrAI/pamiya/releases/tag/v0.2.0
-- Installation spec: `https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz`
+- Package: `@pamiya/dsh-plugin`, version `0.3.0`.
+- Release: https://github.com/UllrAI/pamiya/releases/tag/v0.3.0
+- Installation spec: `https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.0.tgz`
 - Verified Hosts: DSH `0.2.0-rc.2` and `0.2.1-alpha.4`. Other versions remain subject to the Host’s compatibility checks.
 - Preserve existing models, conversations, workspaces, other plugins and connection settings. This prebuilt package needs no clone, source build or npm publication.
 
@@ -24,7 +24,7 @@ This is a self-contained installation task. A user asking you to follow it autho
 ```json
 {
   "action": "install_bundle",
-  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz",
+  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.0.tgz",
   "enabled": true
 }
 ```
@@ -45,3 +45,7 @@ For an installed disabled copy, use `set_bundle` with `target="@pamiya/dsh-plugi
 - Public connections use synthetic tests only. Pair remote computers separately through Pamiya without collecting or publishing credentials in installation documentation.
 
 See the [quickstart](quickstart.md) for self-service steps, remote Worker setup and troubleshooting.
+
+## First remote Skills setup
+
+Local work and synthetic samples need no file storage. If a personal remote Skill task needs storage, guide the user to its activity record and **Configure file storage**, following the [three-step setup](file-storage.md). Secrets belong in the settings password field, never in conversation. After success, return and continue the original task without creating another or changing workers.

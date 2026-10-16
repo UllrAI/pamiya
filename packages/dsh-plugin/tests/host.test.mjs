@@ -36,8 +36,8 @@ test("DSH adapter registers authenticated shared API routes, structured failures
   };
   try {
     await apply(ctx, { autoLocal: false });
-    assert.equal(routes.size, 14);
-    assert.equal(tools.size, 4);
+    assert.equal(routes.size, 18);
+    assert.equal(tools.size, 5);
     const call = async (endpoint, payload = {}) => {
       const response = await routes.get(`/api/pamiya/${endpoint}`).fetch(
         new Request(`http://localhost/api/pamiya/${endpoint}`, {

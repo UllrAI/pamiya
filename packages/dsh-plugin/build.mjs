@@ -62,11 +62,27 @@ for (const input of bundledInputs) {
           const names = (await readdir(directory)).filter((name) =>
             /^licen[cs]e(?:[.-]|$)/i.test(name),
           );
-          if (!names.length)
+          const sdkLicense =
+            !names.length &&
+            metadata.license === "Apache-2.0" &&
+            String(metadata.repository?.url).includes(
+              "github.com/aws/aws-sdk-js-v3",
+            )
+              ? await readFile(
+                  new URL(
+                    "../../node_modules/@aws-sdk/client-s3/LICENSE",
+                    import.meta.url,
+                  ),
+                  "utf8",
+                )
+              : null;
+          if (!names.length && !sdkLicense)
             throw new Error(`Missing distribution license for ${key}`);
-          const notices = await Promise.all(
-            names.map((name) => readFile(join(directory, name), "utf8")),
-          );
+          const notices = sdkLicense
+            ? [sdkLicense]
+            : await Promise.all(
+                names.map((name) => readFile(join(directory, name), "utf8")),
+              );
           packages.set(
             key,
             `## ${key} (${metadata.license ?? "see notice"})\n\n${notices.join("\n")}`,

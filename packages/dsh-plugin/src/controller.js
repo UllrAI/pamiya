@@ -1,4 +1,5 @@
 import mqtt from "mqtt";
+import { SkillFileStore } from "./file-store.js";
 import { ModelChannel } from "./model-channel.js";
 import { randomBytes, randomUUID, createHash } from "node:crypto";
 import { resolve } from "node:path";
@@ -45,14 +46,23 @@ export class Controller {
     home,
     autoLocal = false,
     modelCall,
+    skillCatalog,
     onComplete,
     workerFile = fileURLToPath(new URL("../dist/worker.js", import.meta.url)),
   }) {
     this.store = store;
     this.modelCall = modelCall;
+    this.skillCatalog = skillCatalog;
     this.onComplete = onComplete;
     this.modelChannels = new Map();
+    this.skillChannels = new Map();
     this.secrets = secrets;
+    this.fileStore = new SkillFileStore({
+      home,
+      secrets,
+      publicBaseUrl:
+        "https://raw.githubusercontent.com/UllrAI/pamiya/d1ebfa71a83c24d5b3b4b919a253e74e15ce4647/assets/skills",
+    });
     this.home = home;
     this.autoLocal = autoLocal;
     this.workerFile = workerFile;
@@ -66,6 +76,7 @@ export class Controller {
     this.closed = false;
   }
   async init() {
+    await this.fileStore.init();
     this.state = (await this.store.load()) ?? {
       version: 1,
       broker: {
@@ -140,6 +151,7 @@ export class Controller {
   }
   snapshot() {
     return {
+      fileStorage: this.fileStore.snapshot(),
       broker: this.state.broker,
       connection: this.connection,
       workers: this.state.workers.map((worker) => {
@@ -176,6 +188,8 @@ export class Controller {
                 actions: live.actions,
                 capabilities: live.capabilities ?? [],
                 agents: live.agents ?? [],
+                skillSyncVersion: live.skillSyncVersion ?? 0,
+                skillSelections: live.skillSelections ?? {},
               }
             : {}),
           workspace: worker.local
@@ -362,6 +376,44 @@ export class Controller {
       (item) => item.id === message.taskId && item.workerId === workerId,
     );
     if (!task) return;
+    if (message.kind === "files") {
+      if (
+        !["sent", "running"].includes(task.status) ||
+        message.bootId !== task.bootId
+      )
+        return;
+      let channel = this.skillChannels.get(workerId);
+      if (!channel) {
+        channel = new ModelChannel({
+          send: (frame, id) => this.send(workerId, "files", frame, id),
+          handle: async (request, id, signal) => {
+            const current = this.state.tasks.find(
+              (item) => item.id === id && item.workerId === workerId,
+            );
+            if (
+              !current ||
+              !["sent", "running"].includes(current.status) ||
+              !current.input.skills?.some((ref) => ref.hash === request.hash)
+            )
+              throw new Error("任务没有选择这个 Skill 版本");
+            signal.throwIfAborted();
+            const bundle = await this.skillCatalog.bundle(request.hash);
+            if (!bundle) throw new Error("Skill 快照已缺失，请重新发起任务");
+            return this.fileStore.reference({
+              bundle,
+              workerId,
+              key,
+              local: worker.local,
+              publicTest: config.publicTest,
+              signal,
+            });
+          },
+        });
+        this.skillChannels.set(workerId, channel);
+      }
+      await channel.receive(message.payload, task.id);
+      return;
+    }
     if (message.kind === "model") {
       if (
         !["sent", "running"].includes(task.status) ||
@@ -420,8 +472,16 @@ export class Controller {
       const result = message.payload;
       if (
         !result ||
-        !["succeeded", "failed", "cancelled", "unknown"].includes(result.status)
+        ![
+          "succeeded",
+          "failed",
+          "cancelled",
+          "unknown",
+          "needs_preparation",
+        ].includes(result.status)
       )
+        return;
+      if ((result.preparationRevision ?? 0) !== (task.preparationRevision ?? 0))
         return;
       // A restarted Worker may only settle a previous boot from its durable journal.
       if (message.bootId !== task.bootId && result.bootId !== task.bootId)
@@ -440,7 +500,12 @@ export class Controller {
           typeof result.error === "string" ? result.error.slice(0, 2000) : "";
         current.updatedAt = Date.now();
       });
-      await this.send(workerId, "resultAck", {}, task.id);
+      await this.send(
+        workerId,
+        "resultAck",
+        { preparationRevision: task.preparationRevision ?? 0 },
+        task.id,
+      );
     }
   }
   async ensureLocal() {
@@ -706,6 +771,42 @@ export class Controller {
         throw new Error("请先在 DSH 选择模型");
       input.modelRoute = modelRoute;
     }
+    if (["agent.run", "agent.demo", "skills.prepare"].includes(action)) {
+      const selection =
+        input.skills ??
+        live.skillSelections?.[input.agent]?.map((ref) => ref.id) ??
+        [];
+      if (selection.length && live.skillSyncVersion !== 2)
+        throw new Error("请先更新此节点的 Worker，再使用 Skills 同步");
+      if (selection.some((id) => typeof id !== "string"))
+        throw new Error("请选择能力列表中的 Skill ID，不能自行构造快照");
+      const priorSession =
+        input.sessionRef && input.skills === undefined
+          ? [...this.state.tasks]
+              .reverse()
+              .find(
+                (task) =>
+                  task.workerId === worker.id &&
+                  task.input.agent === input.agent &&
+                  task.result?.sessionRef === input.sessionRef,
+              )
+          : null;
+      input.skills = priorSession
+        ? structuredClone(priorSession.input.skills ?? [])
+        : selection.length
+          ? await this.skillCatalog.snapshot(selection, { sessionId })
+          : [];
+      if (
+        !worker.local &&
+        this.state.broker.publicTest &&
+        input.skills.some((ref) => !ref.synthetic)
+      )
+        throw new Error(
+          "公共连接只验证内置合成 Skill；个人 Skills 请使用本地或私有连接",
+        );
+      if (Buffer.byteLength(JSON.stringify(input)) > 24000)
+        throw new Error("所选 Skills 的依赖声明过大，请减少本次选择");
+    }
     const task = {
       id: randomUUID(),
       intentKey: intentKey ?? randomUUID(),
@@ -723,14 +824,16 @@ export class Controller {
       updatedAt: Date.now(),
       deadline:
         Date.now() +
-        (action === "agent.install"
-          ? 1230
-          : ["agent.run", "agent.demo"].includes(action)
-            ? (input.timeoutSeconds ?? 600) + 30
-            : action.startsWith("custom.")
-              ? (live.capabilities?.find((item) => item.name === action)
-                  ?.timeoutSeconds ?? 120) + 30
-              : 120) *
+        (input.skills?.length
+          ? (input.timeoutSeconds ?? 600) + 1230
+          : action === "agent.install" || input.installDependencies
+            ? 1230
+            : ["agent.run", "agent.demo"].includes(action)
+              ? (input.timeoutSeconds ?? 600) + 30
+              : action.startsWith("custom.")
+                ? (live.capabilities?.find((item) => item.name === action)
+                    ?.timeoutSeconds ?? 120) + 30
+                : 120) *
           1000,
     };
     const saved = await this.mutate((state) => {
@@ -776,14 +879,65 @@ export class Controller {
     }
     return this.state.tasks.find((item) => item.id === task.id);
   }
+  async continueTask(id) {
+    const task = this.state.tasks.find((item) => item.id === id);
+    if (!task || task.status !== "needs_preparation")
+      throw new Error("只有等待准备的任务可以继续");
+    const worker = this.snapshot().workers.find(
+      (item) => item.id === task.workerId,
+    );
+    if (worker?.status !== "ready") throw new Error("请等待原节点可用后继续");
+    await this.mutate((state) => {
+      const current = state.tasks.find((item) => item.id === id);
+      if (current.status !== "needs_preparation")
+        throw new Error("任务已经继续，请查看当前进度");
+      current.status = "sent";
+      current.input.installDependencies = true;
+      current.preparationRevision = (current.preparationRevision ?? 0) + 1;
+      current.bootId = this.live.get(task.workerId).bootId;
+      current.deadline =
+        Date.now() + ((current.input.timeoutSeconds ?? 600) + 1230) * 1000;
+      current.updatedAt = Date.now();
+      current.callbackDelivered = false;
+      current.callbackRevision = (current.callbackRevision ?? 0) + 1;
+    });
+    try {
+      await this.send(
+        task.workerId,
+        "continue",
+        {
+          deadline: this.state.tasks.find((item) => item.id === id).deadline,
+          preparationRevision: this.state.tasks.find((item) => item.id === id)
+            .preparationRevision,
+        },
+        id,
+      );
+    } catch {
+      await this.mutate((state) => {
+        const current = state.tasks.find((item) => item.id === id);
+        current.status = "unknown";
+        current.error = "继续请求未获确认，请核对原节点";
+      });
+    }
+    return this.state.tasks.find((item) => item.id === id);
+  }
   async cancel(id) {
     const task = this.state.tasks.find((item) => item.id === id);
     if (!task) throw new Error("未找到任务");
     this.modelChannels.get(task.workerId)?.cancelTask(id);
-    if (terminal.has(task.status) && task.status !== "unknown") return task;
+    this.skillChannels.get(task.workerId)?.cancelTask(id);
+    if (
+      terminal.has(task.status) &&
+      !["unknown", "needs_preparation"].includes(task.status)
+    )
+      return task;
     await this.mutate((state) => {
       const current = state.tasks.find((item) => item.id === id);
-      if (terminal.has(current.status) && current.status !== "unknown") return;
+      if (
+        terminal.has(current.status) &&
+        !["unknown", "needs_preparation"].includes(current.status)
+      )
+        return;
       current.status = "stop_requested";
       current.updatedAt = Date.now();
     });
@@ -809,11 +963,12 @@ export class Controller {
             !item.callbackDelivered,
         )) {
           try {
+            const revision = task.callbackRevision ?? 0;
             if (await this.onComplete(task))
               await this.mutate((state) => {
-                state.tasks.find(
-                  (item) => item.id === task.id,
-                ).callbackDelivered = true;
+                const current = state.tasks.find((item) => item.id === task.id);
+                if ((current.callbackRevision ?? 0) === revision)
+                  current.callbackDelivered = true;
               });
           } catch {
             /* Retry delivery when the originating agent is available. */
@@ -855,7 +1010,9 @@ export class Controller {
   async toolRun(args, exec, { delegate = false, modelRoute } = {}) {
     exec.signal?.throwIfAborted();
     if (
-      ["agent.run", "agent.demo", "agent.install"].includes(args.action) ||
+      ["agent.run", "agent.demo", "agent.install", "skills.prepare"].includes(
+        args.action,
+      ) ||
       args.action.startsWith("custom.")
     )
       delegate = true;
@@ -934,7 +1091,11 @@ export class Controller {
           }),
       ),
     );
-    for (const channel of this.modelChannels.values()) channel.close();
+    for (const channel of [
+      ...this.modelChannels.values(),
+      ...this.skillChannels.values(),
+    ])
+      channel.close();
     await this.client?.endAsync(true);
     await this.queue;
   }

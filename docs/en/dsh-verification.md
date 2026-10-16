@@ -64,3 +64,24 @@ Verified on 2026-10-16 with native DSH 0.2.0-rc.2 and a physical Linux worker:
 - RunMQTT credentials were refreshed while retaining both worker identities and journals. No private broker or additional server port was created.
 
 Personal independent third-party logins and Windows hardware were not exercised. No real business files or free-form agent jobs were sent over the public connection. The shared interface currently accepts text and tool calls; proprietary media/hosted tools use independent agent configuration. See the [agent guide](agent-workers.md).
+
+## On-demand Skills and HTTPS file transfer (v0.3.0)
+
+Verified on 2026-10-16 using native DSH Desktop and the existing physical Linux Worker:
+
+- The worker UI downloaded the complete built-in Skill from HTTPS pinned to a GitHub commit, detected the missing `pamiya-synthetic-helper` and paused at Needs preparation. Prepare and continue installed its bundled dependency and continued the same task. DSH read the Skill/resource and executed the script, returning the real proof.
+- Conversation called `pamiya_skills list`, then delegated to Linux DSH. A missing-dependency callback returned to the conversation and waited for the user. “Prepare and continue” retained Task ID `2c5ea05d-d34a-4497-acd5-785997bd94ab`; it succeeded with preparation revision 1 and a business-result ACK.
+- Codex, Claude Code and Pi subsequently executed the same Skill sequentially on Linux. All succeeded, returning `PAMIYA_SKILL_OK:48656c6c6f2050616d697961` with result acknowledgements. Claude Code completed its native permission check without disabling its permission mechanism.
+- The first real DSH tool round-trip exposed a missing top-level tool-call identity in the shared model bridge. After repair, UI and conversation retests passed; the original failed record remains.
+- All 36 automated checks passed, including four real CLIs loading Skills, reading resources and executing scripts; standard Skills without extension manifests; complete directories/executable bits; versions/cache; CJS/ESM dependencies; Host restart; same-task continuation; stale result/ACK isolation; and a real MQTT Worker pausing for missing storage and confirming cancellation.
+- S3 automation uses the official SDK with a controlled object-storage adapter: a 3 MB encrypted Skill upload, signed HTTPS reference, decryption and hash verification. Configuration verifies a signed download before saving; failure retains valid settings. Skill bodies are not sent in MQTT.
+
+![Missing dependencies and preparation in native DSH (Chinese UI)](../../packages/dsh-plugin/design/skills-prepare.zh-CN.png)
+
+![Actual remote Agent results (Chinese UI)](../../packages/dsh-plugin/design/skills-agents.zh-CN.png)
+
+Physical remote tests used fixed public synthetic files only, without personal Skills, cloud-storage credentials or real business files. A private S3 bucket is not configured in the user environment; adapter tests do not replace physical private-bucket or cross-provider verification. See [first-time file storage setup](file-storage.md).
+
+Native DSH also verified the S3 preparation step, connection form and invalid-endpoint error. Errors retain the form; closing leaves storage unconfigured, without saving synthetic keys. Additional checks use a real Python venv and commands supplied by Skill dependencies.
+
+The local Worker also completed the native-UI synthetic Skill check, dependency preparation, continuation and actual script result. It read the local snapshot without MQTT or S3.

@@ -116,6 +116,7 @@ export async function sharedModelCall(llm, route, request, signal) {
     return {
       ...value,
       id: randomUUID(),
+      ...(message.role === "tool" ? { toolCallId: callId } : {}),
       source:
         message.role === "assistant"
           ? {

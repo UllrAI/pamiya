@@ -8,7 +8,7 @@ Pamiya 让 DSH 使用你的多台电脑执行工作。对话、模型和账号�
 
 先安装并打开 [DeepSeek Harness](https://www.deepseek.com/harness/)。已验证桌面版 `0.2.0-rc.2` 和 Web Host `0.2.1-alpha.4`。**桌面界面安装不需要 Git、源码或额外安装 Node.js。** 仅其他电脑上的独立 Worker 需要 Node.js 22.19 或更新版本。
 
-当前发布为 `v0.2.0` 预览版，安装包在 [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.2.0)。尚未发布到 npm，请使用下面的完整安装地址。
+当前发布为 `v0.3.0` 预览版，安装包在 [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.3.0)。尚未发布到 npm，请使用下面的完整安装地址。
 
 ## 1. 安装插件
 
@@ -16,7 +16,7 @@ Pamiya 让 DSH 使用你的多台电脑执行工作。对话、模型和账号�
 2. 把下面整条地址粘贴到包名/安装地址输入框，点击 **安装**：
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.0.tgz
 ```
 
 3. 完成后选择 **立即启用**。如果提示需要重启，完全退出 DSH 后重新打开；只关闭窗口不一定会退出应用。
@@ -86,3 +86,7 @@ https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.
 新版本会提供新的发布地址。更新时沿用 DSH 插件管理器；界面要求先卸载时，移除插件包后再安装新地址，不删除 DSH 的数据目录。停用可在 **插件** 中关闭 Pamiya；本机托管 Worker 随插件停止。远程 Worker 需要在对应电脑停止。
 
 开发者的源码安装和 CLI 安装见[完整说明](dsh-plugin.md)。Web profile 可使用 `dsh plugin --profile web add <上面的安装地址>`，然后启用插件。
+
+## 让能力跟着任务走
+
+打开节点卡片的 **Skills**，选择 **运行合成示例**。首次缺依赖时，点击 **准备并继续**，即可看到 Agent 读取资源、运行脚本并回传结果。自己的 Skills 可通过本机文件夹添加；真实远端同步由部署者配置一次 HTTPS 文件中转，不要求节点与本机互通。[完整指南](skills.md)。

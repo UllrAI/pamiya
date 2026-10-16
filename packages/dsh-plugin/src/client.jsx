@@ -10,6 +10,136 @@ import {
 import styles from "./client.css";
 
 const copy = {
+  storageGuideURL: [
+    "https://github.com/UllrAI/pamiya/blob/main/docs/zh-CN/file-storage.md",
+    "https://github.com/UllrAI/pamiya/blob/main/docs/en/file-storage.md",
+  ],
+  storagePrepare: ["准备存储", "Prepare storage"],
+  storageConnect: ["连接并检查", "Connect and test"],
+  storageReady: ["可以使用了", "Ready to use"],
+  storagePrepareHint: [
+    "只需在这台 DSH 上配置一次，其他电脑无需填写存储账号。先从存储控制台取得以下信息：",
+    "Configure this DSH Host once; other computers need no storage accounts. Get these details from your storage console:",
+  ],
+  storageNeedBucket: [
+    "一个已有的私有 Bucket，用来暂存加密的 Skill 文件。",
+    "An existing private bucket for encrypted Skill bundles.",
+  ],
+  storageNeedEndpoint: [
+    "S3 兼容 API 的 HTTPS 地址和 Region；不是控制台网页地址。",
+    "The S3-compatible HTTPS API endpoint and region, rather than the console webpage URL.",
+  ],
+  storageNeedKey: [
+    "可读写此 Bucket 下 pamiya/ 前缀的 Access Key 和 Secret。",
+    "An access key and secret with read/write access under pamiya/ in this bucket.",
+  ],
+  storageNoAccount: ["我还没有这些信息", "I do not have these details"],
+  storageNoAccountHint: [
+    "请在你使用的 S3 兼容存储中创建 Bucket 和专用访问密钥，或让维护者协助。连接指南说明了需要的权限与字段；不要把密钥发送到对话中。",
+    "Create a bucket and dedicated access key in your S3-compatible storage, or ask your administrator. The setup guide explains permissions and fields. Keep secrets out of conversations.",
+  ],
+  storageGuide: ["查看存储配置指南", "Open storage setup guide"],
+  storageHaveInfo: ["已有信息，开始连接", "I have these details"],
+  storageTesting: [
+    "正在上传并下载校验文件，请稍候…",
+    "Uploading and downloading a verification file…",
+  ],
+  storageReadyHint: [
+    "上传、签名下载和内容校验已通过。Worker 会自动使用文件通道，无需直连本机或配置存储密钥。",
+    "Upload, signed download and content verification passed. Workers use the file channel automatically without direct Host access or storage keys.",
+  ],
+  storageReturnContinue: [
+    "返回并继续刚才的任务",
+    "Return and continue the task",
+  ],
+  storageEdit: ["修改连接", "Edit connection"],
+  storageBack: ["上一步", "Back"],
+  storageConfigure: ["配置文件存储", "Configure file storage"],
+
+  fileStorageTitle: ["文件中转", "File transfer"],
+  fileStorageHint: [
+    "跨网络节点通过 HTTPS 上传和下载 Skill 文件，无需与本机直连。由部署者配置一次，Worker 无需存储账号。本机和公共合成示例不需要配置。",
+    "Workers download Skill files over HTTPS without a direct connection to this computer. Configure storage once on the Host; workers need no storage account. Local work and the public synthetic sample need no setup.",
+  ],
+  fileStorageConfigured: ["已配置 · HTTPS 中转", "Configured · HTTPS relay"],
+  fileStorageMissing: [
+    "尚未配置 · 真实远端 Skills 需要文件中转",
+    "Not configured · required for personal remote Skills",
+  ],
+  fileStorageSetup: ["设置文件存储", "Configure file storage"],
+  fileStorageEndpoint: ["S3 兼容 HTTPS 端点", "S3-compatible HTTPS endpoint"],
+  fileStorageBucket: ["Bucket", "Bucket"],
+  fileStorageRegion: ["Region", "Region"],
+  fileStorageKey: ["Access Key ID", "Access Key ID"],
+  fileStorageSecret: [
+    "Secret Access Key（更新时留空保留）",
+    "Secret Access Key (leave blank to retain)",
+  ],
+  fileStorageSave: ["检查连接并保存", "Test and save"],
+  fileStorageStyle: ["使用路径式 Bucket 地址", "Use path-style bucket URLs"],
+  fileStoragePolicy: [
+    "所选 Skill 加密后上传，下载链接 15 分钟有效。请为 Bucket 配置文件过期清理；不要将个人存储密钥放入 Skill。",
+    "Selected Skills are encrypted before upload; download links expire after 15 minutes. Configure bucket lifecycle cleanup. Keep personal storage keys out of Skills.",
+  ],
+
+  skillsTitle: ["Skills", "Skills"],
+  skillsManage: ["管理 Skills", "Manage Skills"],
+  skillsIntro: [
+    "把这次需要的能力带到节点上。Pamiya 会传输脚本和资源、检查声明的依赖，再交给 Agent 使用。",
+    "Bring selected capabilities to this worker. Pamiya transfers scripts and resources, checks declared dependencies, then makes them available to the agent.",
+  ],
+  skillsAgent: ["使用哪个 Agent", "Agent"],
+  skillsPublic: [
+    "公共测试连接只支持内置合成示例。个人 Skills 使用本机或私有连接。",
+    "Public test connections support only the built-in synthetic sample. Use local or private connections for personal Skills.",
+  ],
+  skillsNoProtocol: [
+    "这个 Worker 需要更新，才能接收 Skills。请下载新版 Worker 并保留原节点配置。",
+    "Update this Worker to receive Skills. Use the new Worker file while retaining its configuration.",
+  ],
+  skillsCheck: ["检查所选能力", "Check selected Skills"],
+  skillsPrepare: ["准备所选能力", "Prepare selected Skills"],
+  skillsDemo: ["运行合成示例", "Run synthetic sample"],
+  skillsSampleHint: [
+    "示例包含资源文件和本地依赖，可完整体验“检查 → 准备并继续 → Agent 调用”。",
+    "The sample includes resources and a local dependency to demonstrate check → prepare and continue → agent execution.",
+  ],
+  skillsImport: ["从本机文件夹添加", "Add from a local folder"],
+  skillsPath: ["Skill 文件夹或 SKILL.md 路径", "Skill folder or SKILL.md path"],
+  skillsAdd: ["添加到能力列表", "Add to library"],
+  skillsLoading: ["正在读取可同步的 Skills…", "Loading transferable Skills…"],
+  skillsNew: ["按需使用", "On demand"],
+  skillsPrepared: ["默认使用", "Default selection"],
+  preparationCached: ["内容已缓存", "Content cached"],
+  skillsSampleDescription: [
+    "用测试资源验证文件同步、依赖准备和 Agent 执行。",
+    "Verify file transfer, dependency preparation and Agent execution with test resources.",
+  ],
+  skillsUpdated: ["有更新", "Update available"],
+  skillsSelectionHint: [
+    "成功准备后，后续委派默认使用此 Agent 的所选 Skills；对话中也可以指定其他选择。",
+    "After preparation, future delegations use this agent’s selection by default. A conversation can choose other Skills.",
+  ],
+  needs_preparation: ["需要准备", "Needs preparation"],
+  prepareContinue: ["准备并继续", "Prepare and continue"],
+  preparationPending: [
+    "还差一步，Agent 尚未启动",
+    "One more step; the agent has not started",
+  ],
+  preparationReady: ["所选能力已准备就绪", "Selected Skills are ready"],
+  preparationProgress: ["正在准备能力…", "Preparing Skills…"],
+  preparationFiles: ["Skill 内容与资源", "Skill content and resources"],
+  preparationDependencies: ["依赖检查", "Dependency checks"],
+  preparationMissing: ["需要补齐", "Needs attention"],
+  preparationManual: [
+    "需在节点上处理后继续检查",
+    "Set up on the worker, then check again",
+  ],
+  preparationVersion: ["本次使用的版本", "Versions used by this task"],
+  preparationRecord: ["查看完整运行记录", "View full activity"],
+  skills_transfer: ["正在同步 Skill 内容", "Transferring Skill files"],
+  skills_dependencies: ["正在准备依赖环境", "Preparing dependencies"],
+
   actionAgentDemo: ["Agent 合成验证", "Agent synthetic test"],
   actionAgentRun: ["Agent 任务", "Agent task"],
   actionAgentInstall: ["安装 Agent", "Install agent"],
@@ -27,8 +157,8 @@ const copy = {
   ],
   agentTitle: ["Agent 能力", "Agent capabilities"],
   agentHint: [
-    "默认复用 DSH 模型与鉴权，也可使用节点自己的配置。Skills 暂不同步。",
-    "Share DSH model/authentication or use this worker’s own settings. Skills are not synced yet.",
+    "默认复用 DSH 模型与鉴权，也可使用节点自己的配置。所选 Skills 可按需同步。",
+    "Share DSH model/authentication or use this worker’s own settings. Selected Skills can be prepared on demand.",
   ],
   inheritModel: ["复用 DSH（默认）", "Share DSH (default)"],
   independentModel: ["独立配置", "Independent settings"],
@@ -869,7 +999,16 @@ function AgentSettings({ worker, rpc, act, t, publicTest }) {
     </section>
   );
 }
-function WorkerDetail({ worker, rpc, act, t, onClose, onReissue, publicTest }) {
+function WorkerDetail({
+  worker,
+  rpc,
+  act,
+  t,
+  onClose,
+  onReissue,
+  onSkills,
+  publicTest,
+}) {
   const [workspace, setWorkspace] = useState(worker.workspace ?? ""),
     [allowShell, setAllowShell] = useState(Boolean(worker.allowShell)),
     [label, setLabel] = useState(worker.label),
@@ -899,6 +1038,7 @@ function WorkerDetail({ worker, rpc, act, t, onClose, onReissue, publicTest }) {
       >
         {t("apply")}
       </Button>
+      <Button onClick={onSkills}>{t("skillsManage")}</Button>
       <h3>{t("capabilities")}</h3>
       <div className="pm-tags">
         {(worker.actions ?? [])
@@ -987,7 +1127,489 @@ function WorkerDetail({ worker, rpc, act, t, onClose, onReissue, publicTest }) {
     </Modal>
   );
 }
-function TaskDetail({ task, rpc, act, t, onClose }) {
+function FileStorageSettings({ snapshot, rpc, act, t, onContinue }) {
+  const saved = snapshot.fileStorage ?? {};
+  const [step, setStep] = useState(saved.configured ? 2 : 0),
+    [testing, setTesting] = useState(false),
+    [error, setError] = useState(""),
+    [form, setForm] = useState(() => ({
+      endpoint: saved.endpoint ?? "",
+      bucket: saved.bucket ?? "",
+      region: saved.region ?? "us-east-1",
+      accessKeyId: saved.accessKeyId ?? "",
+      secretAccessKey: "",
+      forcePathStyle: saved.forcePathStyle ?? true,
+    }));
+  useEffect(() => {
+    if (saved.configured) {
+      setForm((previous) => ({
+        ...previous,
+        endpoint: saved.endpoint,
+        bucket: saved.bucket,
+        region: saved.region,
+        accessKeyId: saved.accessKeyId ?? "",
+        forcePathStyle: saved.forcePathStyle,
+        secretAccessKey: "",
+      }));
+      setStep(2);
+    }
+  }, [
+    saved.configured,
+    saved.endpoint,
+    saved.bucket,
+    saved.region,
+    saved.accessKeyId,
+    saved.forcePathStyle,
+  ]);
+  const field = (key) => ({
+    value: form[key],
+    onChange: (event) => setForm({ ...form, [key]: event.target.value }),
+  });
+  const save = async () => {
+    setError("");
+    setTesting(true);
+    try {
+      await rpc("fileStorage", { operation: "save", config: form });
+      setForm({ ...form, secretAccessKey: "" });
+      setStep(2);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setTesting(false);
+    }
+  };
+  return (
+    <section className="pm-storage-setup">
+      <h3>{t("fileStorageTitle")}</h3>
+      <p className="pm-note">{t("fileStorageHint")}</p>
+      <ol className="pm-setup-steps" aria-label={t("fileStorageTitle")}>
+        {["storagePrepare", "storageConnect", "storageReady"].map(
+          (key, index) => (
+            <li key={key} aria-current={step === index ? "step" : undefined}>
+              {index + 1}. {t(key)}
+            </li>
+          ),
+        )}
+      </ol>
+      {step === 0 && (
+        <>
+          <h4>{t("storagePrepare")}</h4>
+          <p>{t("storagePrepareHint")}</p>
+          <ul className="pm-missing">
+            <li>{t("storageNeedBucket")}</li>
+            <li>{t("storageNeedEndpoint")}</li>
+            <li>{t("storageNeedKey")}</li>
+          </ul>
+          <details>
+            <summary>{t("storageNoAccount")}</summary>
+            <p>{t("storageNoAccountHint")}</p>
+            <a href={t("storageGuideURL")} target="_blank" rel="noreferrer">
+              {t("storageGuide")}
+            </a>
+          </details>
+          <p className="pm-note">{t("fileStoragePolicy")}</p>
+          <Button primary onClick={() => setStep(1)}>
+            {t("storageHaveInfo")}
+          </Button>
+        </>
+      )}
+      {step === 1 && (
+        <>
+          <h4>{t("storageConnect")}</h4>
+          <Field label={t("fileStorageEndpoint")}>
+            <input
+              {...field("endpoint")}
+              placeholder="https://s3.example.com"
+              disabled={testing}
+            />
+          </Field>
+          <Field label={t("fileStorageBucket")}>
+            <input {...field("bucket")} autoComplete="off" disabled={testing} />
+          </Field>
+          <Field label={t("fileStorageRegion")}>
+            <input {...field("region")} disabled={testing} />
+          </Field>
+          <Field label={t("fileStorageKey")}>
+            <input
+              {...field("accessKeyId")}
+              autoComplete="off"
+              disabled={testing}
+            />
+          </Field>
+          <Field label={t("fileStorageSecret")}>
+            <input
+              {...field("secretAccessKey")}
+              type="password"
+              autoComplete="new-password"
+              disabled={testing}
+            />
+          </Field>
+          <details>
+            <summary>{t("details")}</summary>
+            <label className="pm-row">
+              <input
+                type="checkbox"
+                checked={form.forcePathStyle}
+                onChange={(event) =>
+                  setForm({ ...form, forcePathStyle: event.target.checked })
+                }
+                disabled={testing}
+              />
+              {t("fileStorageStyle")}
+            </label>
+          </details>
+          {error && (
+            <p role="alert" className="pm-error">
+              {error}
+            </p>
+          )}
+          {testing && <p role="status">{t("storageTesting")}</p>}
+          <div className="pm-row">
+            <Button
+              primary
+              disabled={
+                testing ||
+                !form.endpoint ||
+                !form.bucket ||
+                !form.region ||
+                !form.accessKeyId
+              }
+              onClick={() => act(save)}
+            >
+              {t("fileStorageSave")}
+            </Button>
+            <Button disabled={testing} onClick={() => setStep(0)}>
+              {t("storageBack")}
+            </Button>
+          </div>
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <h4>{t("storageReady")}</h4>
+          <p>{t("storageReadyHint")}</p>
+          <p className="pm-note">
+            {form.bucket || saved.bucket} · {form.endpoint || saved.endpoint}
+          </p>
+          <div className="pm-row">
+            {onContinue && (
+              <Button primary onClick={onContinue}>
+                {t("storageReturnContinue")}
+              </Button>
+            )}
+            <Button onClick={() => setStep(1)}>{t("storageEdit")}</Button>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+function PreparationReport({ task, rpc, act, t, onConfigureStorage }) {
+  const report = task?.result?.preparation;
+  if (!report && !task?.input?.skills?.length) return null;
+  const pending = task.status === "needs_preparation",
+    running = ["sent", "running", "stop_requested"].includes(task.status),
+    storageMissing = report?.missing?.some((item) => item.kind === "storage");
+  return (
+    <section className="pm-preparation" aria-live="polite">
+      <div className="pm-row pm-between">
+        <strong>
+          {t(
+            pending
+              ? "preparationPending"
+              : running
+                ? "preparationProgress"
+                : report?.ready
+                  ? "preparationReady"
+                  : task.status,
+          )}
+        </strong>
+        <Badge status={task.status} t={t} />
+      </div>
+      {running && (
+        <p>
+          {t(task.progress?.phase ?? "skills_transfer")}
+          {task.progress?.text ? ` · ${task.progress.text}` : ""}
+        </p>
+      )}
+      {report?.skills?.length > 0 && (
+        <p className="pm-note">
+          {report.skills.map((skill) => skill.name).join(" · ")}
+        </p>
+      )}
+      {!running && report?.checks?.length > 0 && (
+        <div className="pm-checks">
+          {report.checks.map((check, index) => (
+            <span key={index} data-ready={check.ready}>
+              {check.ready ? "✓" : "○"} {check.name}
+            </span>
+          ))}
+        </div>
+      )}
+      {!running && report?.missing?.length > 0 && (
+        <ul className="pm-missing">
+          {report.missing.map((item, index) => (
+            <li key={index}>
+              {item.message}
+              {!item.installable && <small> · {t("preparationManual")}</small>}
+            </li>
+          ))}
+        </ul>
+      )}
+      {pending && (
+        <div className="pm-row">
+          <Button
+            primary
+            onClick={() =>
+              storageMissing
+                ? onConfigureStorage?.(task.id)
+                : act(() => rpc("continue", { id: task.id }))
+            }
+          >
+            {t(storageMissing ? "storageConfigure" : "prepareContinue")}
+          </Button>
+          <Button onClick={() => act(() => rpc("cancel", { id: task.id }))}>
+            {t("cancel")}
+          </Button>
+        </div>
+      )}
+      {task.error && !pending && !running && (
+        <p className="pm-error">{task.error}</p>
+      )}
+      {task.result?.answer && (
+        <pre className="pm-agent-answer">{task.result.answer}</pre>
+      )}
+      {report?.skills?.length > 0 && (
+        <details>
+          <summary>{t("preparationVersion")}</summary>
+          {report.skills.map((skill) => (
+            <p key={skill.hash}>
+              <span>{skill.name}</span> <code>{skill.hash.slice(0, 12)}</code> ·{" "}
+              {skill.cached ? t("preparationCached") : t("preparationFiles")}
+            </p>
+          ))}
+          {report.notes?.map((note, index) => (
+            <p key={index}>
+              {note.name}: {note.text}
+            </p>
+          ))}
+        </details>
+      )}
+    </section>
+  );
+}
+function SkillsManager({
+  worker,
+  tasks,
+  rpc,
+  act,
+  t,
+  publicTest,
+  onClose,
+  onRecord,
+  onConfigureStorage,
+}) {
+  const [catalog, setCatalog] = useState(null),
+    [agent, setAgent] = useState("dsh"),
+    [selected, setSelected] = useState(
+      () =>
+        worker.skillSelections?.dsh?.map((skill) => skill.id) ?? [
+          "sample:pamiya-skill-check",
+        ],
+    ),
+    [path, setPath] = useState(""),
+    [error, setError] = useState(""),
+    [taskId, setTaskId] = useState(null);
+  const load = () => rpc("skillsCatalog").then(setCatalog);
+  useEffect(() => {
+    let alive = true;
+    rpc("skillsCatalog")
+      .then((value) => {
+        if (alive) setCatalog(value);
+      })
+      .catch((error) => {
+        if (alive) setError(error.message);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [worker.id]);
+  const task = tasks.find((task) => task.id === taskId);
+  const active =
+    task && ["sent", "running", "stop_requested"].includes(task.status);
+  const supported = worker.skillSyncVersion === 2;
+  const run = (action, skills, installDependencies = false) =>
+    act(async () => {
+      const result = await rpc("dispatch", {
+        workerId: worker.id,
+        action,
+        input: { agent, skills, installDependencies },
+      });
+      setTaskId(result.id);
+    });
+  return (
+    <Modal title={`${worker.label} · Skills`} onClose={onClose} t={t}>
+      <p className="pm-note">{t("skillsIntro")}</p>
+      {!worker.local && publicTest && (
+        <p className="pm-note">{t("skillsPublic")}</p>
+      )}
+      {!supported && <p role="status">{t("skillsNoProtocol")}</p>}
+      <Field label={t("skillsAgent")}>
+        <select
+          value={agent}
+          onChange={(event) => {
+            setAgent(event.target.value);
+            setSelected(
+              worker.skillSelections?.[event.target.value]?.map(
+                (skill) => skill.id,
+              ) ?? ["sample:pamiya-skill-check"],
+            );
+          }}
+        >
+          {["dsh", "codex", "claude", "pi"].map((id) => (
+            <option key={id} value={id}>
+              {
+                { dsh: "DSH", codex: "Codex", claude: "Claude Code", pi: "Pi" }[
+                  id
+                ]
+              }
+            </option>
+          ))}
+        </select>
+      </Field>
+      {error && (
+        <p role="alert" className="pm-error">
+          {error}
+        </p>
+      )}
+      {!catalog && <p>{t("skillsLoading")}</p>}
+      <div className="pm-skill-list">
+        {catalog?.skills.map((skill) => {
+          const previous = worker.skillSelections?.[agent]?.find(
+              (item) => item.id === skill.id,
+            ),
+            disabled =
+              !supported ||
+              active ||
+              (!worker.local && publicTest && !skill.synthetic) ||
+              (selected.length >= 8 && !selected.includes(skill.id));
+          return (
+            <label className="pm-skill-item" key={skill.id}>
+              <input
+                type="checkbox"
+                checked={selected.includes(skill.id)}
+                disabled={disabled}
+                onChange={(event) =>
+                  setSelected(
+                    event.target.checked
+                      ? [...selected, skill.id]
+                      : selected.filter((id) => id !== skill.id),
+                  )
+                }
+              />
+              <span>
+                <strong>{skill.name}</strong>
+                <small>
+                  {skill.id === "sample:pamiya-skill-check"
+                    ? t("skillsSampleDescription")
+                    : skill.description}
+                </small>
+              </span>
+              <small className="pm-skill-state">
+                {t(
+                  previous
+                    ? previous.hash === skill.hash
+                      ? "skillsPrepared"
+                      : "skillsUpdated"
+                    : "skillsNew",
+                )}
+              </small>
+            </label>
+          );
+        })}
+      </div>
+      <p className="pm-note">{t("skillsSelectionHint")}</p>
+      <div className="pm-row">
+        <Button
+          disabled={!supported || active || worker.status !== "ready"}
+          onClick={() => run("skills.prepare", selected)}
+        >
+          {t("skillsCheck")}
+        </Button>
+        <Button
+          primary
+          disabled={!supported || active || worker.status !== "ready"}
+          onClick={() => run("skills.prepare", selected, true)}
+        >
+          {t("skillsPrepare")}
+        </Button>
+      </div>
+      <div className="pm-skill-demo">
+        <div>
+          <strong>{t("skillsDemo")}</strong>
+          <p className="pm-note">{t("skillsSampleHint")}</p>
+        </div>
+        <Button
+          disabled={
+            !supported ||
+            active ||
+            worker.status !== "ready" ||
+            !worker.agents?.some((item) => item.id === agent && item.installed)
+          }
+          onClick={() => run("agent.demo", ["sample:pamiya-skill-check"])}
+        >
+          {t("skillsDemo")}
+        </Button>
+      </div>
+      {task && (
+        <>
+          <PreparationReport
+            task={task}
+            rpc={rpc}
+            act={act}
+            t={t}
+            onConfigureStorage={onConfigureStorage}
+          />
+          <Button onClick={() => onRecord(task.id)}>
+            {t("preparationRecord")}
+          </Button>
+        </>
+      )}
+      <details>
+        <summary>{t("skillsImport")}</summary>
+        <Field label={t("skillsPath")}>
+          <input
+            value={path}
+            onChange={(event) => setPath(event.target.value)}
+            placeholder="…/my-skill/SKILL.md"
+          />
+        </Field>
+        <Button
+          disabled={!path.trim()}
+          onClick={() =>
+            act(async () => {
+              const skill = await rpc("skillsImport", { path });
+              await load();
+              setSelected([...new Set([...selected, skill.id])]);
+              setPath("");
+            })
+          }
+        >
+          {t("skillsAdd")}
+        </Button>
+      </details>
+      {catalog?.issues?.length > 0 && (
+        <details>
+          <summary>{t("details")}</summary>
+          {catalog.issues.map((issue, index) => (
+            <p key={index}>{issue.message}</p>
+          ))}
+        </details>
+      )}
+    </Modal>
+  );
+}
+function TaskDetail({ task, rpc, act, t, onClose, onConfigureStorage }) {
   const [continuation, setContinuation] = useState(""),
     [note, setNote] = useState(""),
     [verified, setVerified] = useState("failed"),
@@ -1015,6 +1637,13 @@ function TaskDetail({ task, rpc, act, t, onClose }) {
           {task.progress.text && <pre>{task.progress.text}</pre>}
         </>
       )}
+      <PreparationReport
+        task={task}
+        rpc={rpc}
+        act={act}
+        t={t}
+        onConfigureStorage={onConfigureStorage}
+      />
       <h3>{t("input")}</h3>
       <pre>{JSON.stringify(task.input, null, 2)}</pre>
       <h3>{t("result")}</h3>
@@ -1527,6 +2156,13 @@ function Panel({ ctx, t }) {
                             : t("awaiting")}
                       </small>
                       <Button
+                        onClick={() =>
+                          setDialog({ type: "skills", id: worker.id })
+                        }
+                      >
+                        {t("skillsTitle")}
+                      </Button>
+                      <Button
                         disabled={worker.status !== "ready"}
                         onClick={() =>
                           act(() =>
@@ -1640,6 +2276,20 @@ function Panel({ ctx, t }) {
             t={t}
             notify={notify}
           />
+          <section className="pm-storage-setup">
+            <h3>{t("fileStorageTitle")}</h3>
+            <p className="pm-note">{t("fileStorageHint")}</p>
+            <p>
+              {t(
+                snapshot.fileStorage?.configured
+                  ? "fileStorageConfigured"
+                  : "fileStorageMissing",
+              )}
+            </p>
+            <Button onClick={() => setDialog({ type: "storage" })}>
+              {t("storageConfigure")}
+            </Button>
+          </section>
         </div>
       </fieldset>
       {dialog?.type === "add" && (
@@ -1660,6 +2310,7 @@ function Panel({ ctx, t }) {
           rpc={rpc}
           act={act}
           t={t}
+          onSkills={() => setDialog({ type: "skills", id: selectedWorker.id })}
           onReissue={() =>
             act(async () => {
               const invitation = await rpc("reissue", {
@@ -1671,14 +2322,59 @@ function Panel({ ctx, t }) {
           onClose={() => setDialog(null)}
         />
       )}
+      {dialog?.type === "skills" && selectedWorker && (
+        <SkillsManager
+          worker={selectedWorker}
+          tasks={snapshot.tasks}
+          rpc={rpc}
+          act={act}
+          t={t}
+          publicTest={snapshot.broker.publicTest}
+          onClose={() => setDialog(null)}
+          onConfigureStorage={(taskId) =>
+            setDialog({ type: "storage", taskId })
+          }
+          onRecord={(id) => setDialog({ type: "task", taskId: id })}
+        />
+      )}
       {dialog?.type === "task" && selectedTask && (
         <TaskDetail
           task={selectedTask}
+          onConfigureStorage={(taskId) =>
+            setDialog({ type: "storage", taskId })
+          }
           rpc={rpc}
           act={act}
           t={t}
           onClose={() => setDialog(null)}
         />
+      )}
+      {dialog?.type === "storage" && (
+        <Modal
+          title={t("storageConfigure")}
+          t={t}
+          onClose={() =>
+            setDialog(
+              dialog.taskId ? { type: "task", taskId: dialog.taskId } : null,
+            )
+          }
+        >
+          <FileStorageSettings
+            snapshot={snapshot}
+            rpc={rpc}
+            act={act}
+            t={t}
+            onContinue={
+              dialog.taskId
+                ? () =>
+                    act(async () => {
+                      await rpc("continue", { id: dialog.taskId });
+                      setDialog({ type: "task", taskId: dialog.taskId });
+                    })
+                : undefined
+            }
+          />
+        </Modal>
       )}
       {dialog?.type === "try" && (
         <TryWorker

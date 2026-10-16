@@ -5,6 +5,7 @@ import {
   randomUUID,
 } from "node:crypto";
 import { z } from "zod";
+import { skillRefSchema } from "./skills.js";
 import { parseCapabilities, validateCustom } from "./capabilities.js";
 
 export const VERSION = 1;
@@ -20,6 +21,7 @@ export const demoActions = [
   "worker.configure",
   "agent.install",
   "agent.artifact",
+  "skills.prepare",
 ];
 export const privateActions = [
   ...demoActions,
@@ -34,6 +36,7 @@ export const terminal = new Set([
   "failed",
   "cancelled",
   "unknown",
+  "needs_preparation",
 ]);
 export const brokerSchema = z
   .object({
@@ -85,6 +88,8 @@ export const messageSchema = z
       "query",
       "model",
       "progress",
+      "files",
+      "continue",
     ]),
     taskId: z.string().uuid().optional(),
     payload: z.unknown(),
@@ -217,6 +222,17 @@ export function validateInput(action, input, publicTest, capabilities = []) {
       })
       .strict()
       .parse(input);
+  if (action === "skills.prepare")
+    return z
+      .object({
+        agent: z.enum(["dsh", "codex", "claude", "pi"]),
+        skills: z
+          .array(z.union([z.string().min(1).max(180), skillRefSchema]))
+          .max(8),
+        installDependencies: z.boolean().default(false),
+      })
+      .strict()
+      .parse(input);
   if (action === "agent.run" || action === "agent.demo")
     return z
       .object({
@@ -233,6 +249,11 @@ export function validateInput(action, input, publicTest, capabilities = []) {
           })
           .optional(),
         synthetic: z.boolean().optional(),
+        skills: z
+          .array(z.union([z.string().min(1).max(180), skillRefSchema]))
+          .max(8)
+          .optional(),
+        installDependencies: z.boolean().default(false),
       })
       .strict()
       .superRefine((value, ctx) => {

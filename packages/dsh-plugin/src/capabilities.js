@@ -84,8 +84,9 @@ export async function readCapabilities(directory) {
     throw error;
   }
 }
-export async function executable(name, directory) {
+export async function executable(name, directory, extraPath = "") {
   const folders = [
+    ...extraPath.split(delimiter).filter(Boolean),
     resolve(directory, "agents", "node_modules", ".bin"),
     resolve(homedir(), ".pamiya", "agents", "node_modules", ".bin"),
     resolve(

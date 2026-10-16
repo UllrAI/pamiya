@@ -102,7 +102,7 @@ Checking a result only queries the Worker. A human can record an uncertain outco
 This plugin implements a small version-1 contract. The broader [platform protocol proposal](capabilities-and-protocol.md) is not its wire format.
 
 - Topics: `sandbox/pamiya/<namespace-id>/workers/<worker-id>/down` for Host commands and `/up` for Worker events; QoS 1, no retained messages.
-- Plaintext envelope: `v`, unique message `id`, timestamp `at`, `workerId`, `bootId`, `kind`, optional `taskId`, and `payload`. `kind` is `status`, `dispatch`, `accepted`, `result`, `resultAck`, `query`, `cancel`, `progress` or `model`.
+- Plaintext envelope: `v`, unique message `id`, timestamp `at`, `workerId`, `bootId`, `kind`, optional `taskId`, and `payload`. `kind` is `status`, `dispatch`, `accepted`, `result`, `resultAck`, `query`, `cancel`, `progress`, `model`, `files` or `continue`.
 - Encrypted transport envelope: AES-256-GCM `iv`, `tag`, `data` encoded in Base64url; authenticated data is `<namespace>|<workerId>|<up-or-down>`. Messages must belong to the selected Worker and be within 120 seconds of local time. Keep machine clocks synchronized.
 - An Agent Session and DSH `callId` derive the persisted intent key. A Task UUID binds one Worker, boot and Attempt 1. Duplicate dispatches consult the Worker journal; transport message IDs are not business deduplication keys.
 - Dispatch payload: `{action, input, deadline}`. A result carries `{status, result?, error?, bootId?}` and is acknowledged only after Host persistence. Status includes advertised actions and capacity; heartbeats occur every 5 seconds and the Host considers presence stale after 18 seconds.
@@ -119,3 +119,7 @@ Browser acceptance uses an actual DSH Host, not the simulated prototype. Multi-t
 
 
 [Recorded acceptance evidence and remaining checks](dsh-verification.md).
+
+## Skill files and dependency preparation
+
+See the [full guide](skills.md) for selection, checks, on-demand transfer and Prepare and continue from conversation or the worker UI. Remote Skill bodies use HTTPS file relay storage with outbound access from both ends; MQTT `files` messages exchange references only. `needs_preparation` means the Agent has not started. Continuation retains the same Task ID, worker and pinned content version. A preparation revision prevents stale results or ACKs from overwriting a later phase. Tools add `pamiya_skills` and the `pamiya_task` `prepare` operation.

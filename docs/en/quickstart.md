@@ -8,7 +8,7 @@ Pamiya lets DSH work across your computers. Keep using DSH’s conversations, mo
 
 Install and open [DeepSeek Harness](https://www.deepseek.com/harness/). Verified Hosts are Desktop `0.2.0-rc.2` and Web `0.2.1-alpha.4`. **Desktop UI installation needs no Git, source checkout or separate Node.js installation.** Only standalone Workers on other computers require Node.js 22.19 or newer.
 
-The current release is the `v0.2.0` preview on [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.2.0). It is not published to npm; use the complete installation URL below.
+The current release is the `v0.3.0` preview on [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.3.0). It is not published to npm; use the complete installation URL below.
 
 ## 1. Install the plugin
 
@@ -16,7 +16,7 @@ The current release is the `v0.2.0` preview on [GitHub Releases](https://github.
 2. Paste this complete URL into the package/installation field and select **Install**:
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.0.tgz
 ```
 
 3. Select **Enable now** when installation finishes. If DSH requests a restart, fully quit and reopen it; closing a window may leave the application running.
@@ -86,3 +86,7 @@ Full Desktop acceptance used macOS with a Linux remote Worker. Windows process b
 New releases provide a new installation URL. Use DSH’s plugin manager; when it requires removing the installed package first, remove the package and install the new URL without deleting the DSH data directory. Disable Pamiya under **Plugins** to stop its managed local Worker. Stop remote Workers on their own computers.
 
 Source and CLI installation are in the [full guide](dsh-plugin.md). For a Web profile, use `dsh plugin --profile web add <installation-URL-above>` and enable the plugin.
+
+## Let capabilities travel with the task
+
+Open **Skills** on a worker card and select **Run synthetic sample**. When dependencies are missing, choose **Prepare and continue** to see the Agent read resources, execute its script and return the result. Import your own Skills from local folders. For personal remote Skills, configure HTTPS file relay storage once; workers need no direct connection to the Host. [Full guide](skills.md).

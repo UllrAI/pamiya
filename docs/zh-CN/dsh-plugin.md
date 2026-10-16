@@ -102,7 +102,7 @@ Host 将当前选择及能力注入模型上下文，并提醒原生 DSH 工具�
 插件采用一个精简的版本 1 契约；[平台协议提案](capabilities-and-protocol.md)不是它当前的线格式。
 
 - Topic：`sandbox/pamiya/<namespace-id>/workers/<worker-id>/down` 用于 Host 命令，`/up` 用于 Worker 事件；QoS 1，不使用 retained。
-- 明文消息字段：`v`、唯一消息 `id`、时间戳 `at`、`workerId`、`bootId`、`kind`、可选 `taskId` 与 `payload`。`kind` 为 `status`、`dispatch`、`accepted`、`result`、`resultAck`、`query` 、`cancel`、`progress` 或 `model`。
+- 明文消息字段：`v`、唯一消息 `id`、时间戳 `at`、`workerId`、`bootId`、`kind`、可选 `taskId` 与 `payload`。`kind` 为 `status`、`dispatch`、`accepted`、`result`、`resultAck`、`query` 、`cancel`、`progress`、`model`、`files` 或 `continue`。
 - 传输层使用 AES-256-GCM，`iv`、`tag`、`data` 为 Base64url，附加认证数据为 `<namespace>|<workerId>|<up-or-down>`。消息需属于选定节点，且与本机时间相差不超过 120 秒；机器时钟需要同步。
 - Agent Session 与 DSH `callId` 生成持久意图键；Task UUID 绑定一个 Worker、boot 与 Attempt 1。重复分派查询 Worker 日志，传输消息 ID 不充当业务去重键。
 - 分派载荷为 `{action, input, deadline}`；结果为 `{status, result?, error?, bootId?}`，Host 持久保存后才确认。状态包含已开放能力与容量；心跳间隔 5 秒，Host 在 18 秒无响应后认为在线信息已过期。
@@ -119,3 +119,7 @@ Host 将当前选择及能力注入模型上下文，并提醒原生 DSH 工具�
 
 
 [实际验收证据与剩余检查](dsh-verification.md)。
+
+## Skills 文件与依赖准备
+
+见[完整指南](skills.md)：对话和节点界面均支持选择、检查、按需同步与准备并继续。远端 Skill 内容走 HTTPS 文件中转，双方只需出站；MQTT 的 `files` 消息仅交换引用。等待准备为 `needs_preparation`，尚未启动 Agent；继续使用同一 Task ID、节点和固定内容版本。继续阶段带独立准备序号，旧结果与 ACK 不会覆盖新阶段。普通工具新增 `pamiya_skills`；`pamiya_task` 新增 `prepare` 操作。
