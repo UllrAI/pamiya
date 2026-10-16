@@ -32,9 +32,13 @@ Retain existing repository banner branding. The app need not use a dark banner b
 
 **Sidebar:** wordmark/collapse, new conversation, tools/connections, history/search, More at bottom. Selected conversation is subtly gray. Long names truncate; management appears on hover/focus. Collapsing always leaves an expand control.
 
+**Attention (local prototype):** show text and a count per piece of work before history when nonempty. A top-of-main entry remains reachable when collapsed or on phone. Its lightweight list separates Needs your action/New results, with short goal, concrete reason, and one primary action. Add no home card section, task table, or global progress. Read and resolved are distinct, not conveyed solely by color or transient notices. Keyboard access and focus return work; opening preserves the composer draft.
+
 **Composer:** multiline text, removable context chips, attachment, tool connections, send/stop. Do not require a model, mode, or device first. Empty send is disabled. Stop remains reachable during work, and entered steering exposes a send action.
 
 **Messages/activity:** subtle user bubble; prose-first Agent response. Activity is an expandable line. Specific blockers have contextual actions rather than alarming red panels. Running/waiting/stopped/completed all have text, not color alone.
+
+**Current work and new messages (local rule-based demonstration):** when useful, one line beside activity explains goal, progress, and next step. Feedback distinguishes received, applied, answered-only, replacing, and queued-after. Show pending text access/withdrawal only when follow-ups exist; held requests offer continue/withdraw. Add no message-mode switch, work-type form, queue manager, or fixed stages. Retain result provenance after ending; revision returns to the same artifact.
 
 **Artifacts:** title/current version, secondary version/edit/download toolbar, readable document width. Fullscreen is a view of the same artifact. Editing differs visibly from preview; a historical version cannot be mistaken for the current editable one.
 

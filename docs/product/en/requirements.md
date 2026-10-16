@@ -18,6 +18,14 @@ Primary users delegate research, synthesis, writing, and everyday work. Develope
 
 Do not assume everyone needs projects, code, devices, or automation. First use does not require selecting an Agent, drawing a workflow, or installing a Worker.
 
+## Focus of this revision
+
+People hand over a goal, adjust it in conversation, and return to find required actions and results. A piece of work means a goal with an expected delivery, represented through existing messages, Session, Runs, and artifacts. It adds no work-type selector, separate project entity, or task administration console.
+
+The first validation scenario is a report: supply materials, shorten it or ask about evidence during execution, supplement or replace missing sources, leave and return to resolve a blocker, inspect the result, and revise the same report. Conversation supports discussion, activity explains progress, artifacts retain delivery, and the attention entry returns people to the relevant place. Continuing on another day uses these same entries without creating the work again.
+
+The current product baseline covers conversational continuity and reliable delivery of a single goal. Explicit scheduled/event triggers follow later. Open-ended monitoring first needs a source, trigger, scope, and end condition; saving a preference does not promise continuing execution. This set specifies the target product; current DSH plugin and simulated prototype capabilities remain defined by their own guides.
+
 ## Principles
 
 1. Start directly. One default Personal Agent accepts language and materials. Deployers configure the model and default cloud capability; end users do not initialize the runtime.
@@ -37,10 +45,10 @@ P0 is required for the baseline loop, P1 follows as a deliverable extension, and
 | R02 | P0 | Multi-turn conversation, attachments, selected historical context; avoid duplicate execution; IME Enter does not send |
 | R03 | P0 | Autonomous use of available tools; concise activity and optional detail; waiting releases compute |
 | R04 | P0 | Clarify only consequential gaps; offer quick answers and free input |
-| R05 | P0 | Accept steering during execution at an appropriate boundary; stop or queue conflicting replacement goals |
+| R05 | P0 | Distinguish steering, questions, replacement goals, and follow-up requests during execution; state actual treatment; show/withdraw pending requests; no mandatory message-mode selection |
 | R06 | P0 | Distinguish stop requested/confirmed; retain delivered work; query important submitted effects before retry |
 | R07 | P0 | Artifact preview, editing, download, versions, conversational revision; no silent overwrite of human edits |
-| R08 | P0 | History, search, rename, recoverable archive; leaving a Session does not stop real cloud execution |
+| R08 | P0 | History, search, rename, recoverable archive; leaving does not stop real execution; archive neither clears unread results nor hides unresolved work |
 | R09 | P0 | Connect a missing resource within the flow; state scope; block only dependent work |
 | R10 | P0 | Explain retained progress, failure, and recovery; retry safe reads, never blindly replay uncertain important effects |
 | R11 | P0 | User/tenant data and resource isolation; existing authorization covers ordinary operations |
@@ -50,12 +58,14 @@ P0 is required for the baseline loop, P1 follows as a deliverable extension, and
 | R15 | P1 | On-demand desktop, Edge, device, and specialist Agent integration; connectivity differs from capability readiness |
 | R16 | P1 | Event triggers expose specific sources/conditions; runtime handles deduplication/merging, without a workflow builder |
 | R17 | P0 | Natural Chinese, keyboard use, narrow-screen core flows, aligned bilingual documentation |
+| R18 | P0 | Retain goal origin, expected delivery, progress, and artifact relationships; waiting/recovery does not duplicate work; revisions after termination link a new Run; distinguish stop, archive, and schedule pause |
+| R19 | P0 | Show an attention entry when needed, separating required user actions from unread results; deduplicate per piece of work and return to its conversation position; read is not resolved; restore authoritative state |
 
 R13–R16 are designed in this set. The prototype implements schedule and memory interactions; actual connections, event sources, and device execution have explicit integration boundaries.
 
 ## Baseline and later work
 
-**Baseline product:** default Agent, one cloud environment, conversation/context, activity, artifacts, reliable stop/recovery, history, minimal connections. Runtime uses one active coordinator, serialized Sessions, durable Run/Task/Attempt state, and business acknowledgements.
+**Baseline product:** default Agent, one cloud environment, conversation/context, goal lifecycle, handling of messages during execution, activity, artifacts, reliable stop/recovery, history, attention entry, and minimal connections. Runtime uses one active coordinator, serialized Sessions, durable Run/Task/Attempt state, and business acknowledgements.
 
 **Next:** simple schedules, explicit memory management, one desktop/Edge adapter, specialist delegation. Add devices and event rules for actual user goals, not as launch prerequisites.
 
@@ -67,8 +77,10 @@ Identity, model credential configuration, file storage, and the real runtime rem
 
 These are hypotheses, not measured results: first-time users complete a delivery without help; a typical user submits an effective first goal within 30 seconds; at least 4/5 formative-test participants find and revise an artifact; every stop/recovery test avoids false success and duplicate uncertain submissions.
 
+At least 4/5 formative-test participants can explain how their message during execution was handled and, after leaving, find required input and unread delivery through the attention entry. Stopping must not immediately restart work through an unexplained queued request.
+
 Measure effective goal submission, missing input, connection blockers, artifact open/edit/download, follow-up, stop requested/confirmed, and recovery outcome. Use anonymous events and object references rather than message bodies, file contents, or private reasoning. Build analytics infrastructure only when needed.
 
 ## Definition of done
 
-Requirements, interactions, domain states, and acceptance align; the prototype covers primary flows with honest simulation labels and passes visual/responsive review. Production additionally requires real models, persistence, adapters, identity, reconciliation, and fault acceptance. Screenshots are not production proof.
+Requirements, interactions, domain states, and acceptance align; the prototype covers primary flows with honest simulation labels and passes visual/responsive review. Lifecycle links, message treatment/queuing, and attention have local rule-based demonstrations and model tests. Real semantic understanding, authoritative state, and cross-client synchronization still need production integration acceptance. Production additionally requires real models, persistence, adapters, identity, reconciliation, and fault acceptance. Screenshots are not production proof.

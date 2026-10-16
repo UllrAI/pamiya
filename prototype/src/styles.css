@@ -1379,3 +1379,146 @@ p {
 .history-list {
   min-height: 0;
 }
+
+.attention-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px;
+  font-size: 13px;
+  color: #405e69;
+  border-radius: 8px;
+}
+.attention-trigger:hover {
+  background: #dce1e65c;
+}
+.attention-trigger > span:first-of-type {
+  flex: 1;
+  text-align: left;
+}
+.attention-count {
+  border-radius: 12px;
+  min-width: 22px;
+  padding: 1px 6px;
+  background: #dce6e8;
+  text-align: center;
+}
+.attention-compact {
+  display: none;
+  flex-shrink: 0;
+}
+.sidebar-collapsed .attention-compact {
+  display: flex;
+}
+.attention-list section + section {
+  margin-top: 26px;
+}
+.attention-list h3 {
+  font-size: 13px;
+  color: #65717b;
+}
+.attention-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 15px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.attention-item > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.attention-item strong,
+.attention-item small {
+  display: block;
+}
+.attention-item strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.attention-item small {
+  color: #65717b;
+  margin-top: 5px;
+  line-height: 1.7;
+}
+.attention-action {
+  display: inline-block;
+  color: #426b75;
+  margin-top: 7px;
+  font-size: 12px;
+}
+.work-goal {
+  font-size: 12px;
+  color: #65717b;
+  margin: 12px 0 7px;
+  line-height: 1.7;
+}
+.message-treatment {
+  display: block;
+  color: #65717b;
+  font-size: 11px;
+  margin-top: 8px;
+}
+.message-choice {
+  border-top: 1px solid #dce0e6;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+.message-choice p {
+  font-size: 12px;
+}
+.follow-ups {
+  border-left: 2px solid var(--line);
+  padding-left: 14px;
+  margin: 14px 0;
+  font-size: 12px;
+}
+.follow-ups p {
+  color: #65717b;
+  margin-bottom: 6px;
+}
+.follow-up {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 14px;
+  padding: 8px 0;
+}
+.follow-up > div:first-child {
+  flex: 1;
+  min-width: 150px;
+  overflow-wrap: anywhere;
+}
+.follow-up small,
+.follow-ups > small {
+  display: block;
+  margin-top: 5px;
+  line-height: 1.7;
+  color: #65717b;
+}
+@media (max-width: 760px) {
+  .attention-compact {
+    display: flex;
+    min-height: 44px;
+  }
+  .attention-compact > span {
+    display: none;
+  }
+  .attention-compact::after {
+    content: attr(aria-label);
+    font-size: 11px;
+  }
+  .topbar {
+    gap: 5px;
+  }
+  .topbar .conversation-title {
+    min-width: 0;
+  }
+  .follow-ups .text-button,
+  .message-choice .text-button {
+    min-height: 44px;
+  }
+}

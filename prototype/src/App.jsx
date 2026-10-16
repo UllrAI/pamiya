@@ -32,6 +32,7 @@ import {
   ArrowsOutSimple,
   ArrowsInSimple,
   Paperclip,
+  Tray,
 } from "@phosphor-icons/react";
 import {
   ACTIVE,
@@ -43,7 +44,14 @@ import {
   currentRun,
   startRun,
   tickSession,
-  addInput,
+  submitMessage,
+  resolveMessage,
+  replaceMaterial,
+  withdrawRequest,
+  continueRequest,
+  attentionItems,
+  markResultsRead,
+  needsTick,
   stopRun,
   retryRun,
   reconcileRun,
@@ -54,6 +62,13 @@ import {
   nextOccurrence,
 } from "./model.mjs";
 import { IconProvider, IconButton, Modal, Spinner } from "./ui.jsx";
+
+import {
+  AttentionModal,
+  FollowUps,
+  MaterialModal,
+  MessageTreatment,
+} from "./work-ui.jsx";
 
 const formatDate = (time, zone = "Asia/Shanghai") =>
   new Intl.DateTimeFormat("zh-CN", {
@@ -95,13 +110,16 @@ export function App() {
   const composerRef = useRef(null);
   const endRef = useRef(null);
   const toastTimer = useRef(null);
+  const messagesRef = useRef(null);
+  const artifactHeaderRef = useRef(null);
+  const [focusMessage, setFocusMessage] = useState(null);
   const session = data.sessions.find((s) => s.id === activeId);
   const run = currentRun(session);
   const artifact = session?.artifacts.find((a) => a.id === artifactId);
   const draft = session ? session.draft : homeDraft;
   const attachments = session ? session.draftAttachments : homeAttachments;
-  const canSend =
-    Boolean(draft.trim() || attachments.length) && run?.status !== "stopping";
+  const canSend = Boolean(draft.trim() || attachments.length);
+  const attention = attentionItems(data.sessions);
   const dirty = editBody !== null && artifact && editBody !== artifact.body;
 
   useEffect(() => {
@@ -116,8 +134,7 @@ export function App() {
     const timer = setInterval(
       () =>
         setData((old) => {
-          if (!old.sessions.some((s) => ACTIVE.includes(currentRun(s)?.status)))
-            return old;
+          if (!old.sessions.some(needsTick)) return old;
           return { ...old, sessions: old.sessions.map(tickSession) };
         }),
       1900,
@@ -125,8 +142,94 @@ export function App() {
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
+    if (focusMessage?.sessionId === activeId) return;
     endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [session?.messages.length, run?.status]);
+  }, [session?.messages.length, run?.status, activeId]);
+  useEffect(() => {
+    if (focusMessage?.sessionId !== activeId) return;
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(
+        `message-${focusMessage.messageId}`,
+      );
+      if (target) {
+        target.scrollIntoView({ block: "center" });
+        target.tabIndex = -1;
+        target.focus({ preventScroll: true });
+      }
+      setFocusMessage(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activeId, focusMessage]);
+  useEffect(() => {
+    const root = messagesRef.current;
+    if (!session || !root || modal || (artifact && window.innerWidth <= 1150))
+      return;
+    const sessionId = session.id;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (document.visibilityState !== "visible") return;
+        const ids = entries
+          .filter((e) => e.isIntersecting && e.intersectionRatio >= 0.6)
+          .map((e) => e.target.dataset.resultId);
+        if (ids.length)
+          updateSession((s) => markResultsRead(s, ids), sessionId);
+      },
+      { root, threshold: 0.6 },
+    );
+    const observe = () => {
+      observer.disconnect();
+      if (document.visibilityState === "visible")
+        root
+          .querySelectorAll("[data-result-id]")
+          .forEach((element) => observer.observe(element));
+    };
+    observe();
+    document.addEventListener("visibilitychange", observe);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", observe);
+    };
+  }, [activeId, session?.messages, modal, artifactId]);
+  useEffect(() => {
+    if (!artifact || editBody !== null || modal) return;
+    const element = artifactHeaderRef.current;
+    const sessionId = session.id;
+    const ids = session.messages
+      .filter(
+        (m) =>
+          m.result?.artifactId === artifact.id &&
+          m.result.artifactVersion === (Number(version) || artifact.version),
+      )
+      .map((m) => m.result.id);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          document.visibilityState === "visible" &&
+          entries.some((e) => e.isIntersecting && e.intersectionRatio >= 0.6)
+        )
+          updateSession((s) => markResultsRead(s, ids), sessionId);
+      },
+      { threshold: 0.6 },
+    );
+    const observe = () => {
+      observer.disconnect();
+      if (document.visibilityState === "visible" && element)
+        observer.observe(element);
+    };
+    observe();
+    document.addEventListener("visibilitychange", observe);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", observe);
+    };
+  }, [
+    artifactId,
+    artifact?.version,
+    version,
+    editBody,
+    modal,
+    session?.messages,
+  ]);
   useEffect(() => {
     const onKey = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -180,7 +283,7 @@ export function App() {
       setFullCanvas(false);
     });
   }
-  function selectSession(id) {
+  function selectSession(id, after = () => {}) {
     leaveEditor(() => {
       setActiveId(id);
       setArtifactId(null);
@@ -189,6 +292,7 @@ export function App() {
       setFullCanvas(false);
       setMore(false);
       if (window.innerWidth <= 760) setSidebarOpen(false);
+      after();
     });
   }
   function newChat() {
@@ -199,17 +303,19 @@ export function App() {
     e.preventDefault();
     if (!canSend) return;
     const text = draft.trim() || "请根据这些文件整理一份方案。";
-    if (run && [...ACTIVE, ...BLOCKED].includes(run.status)) {
-      updateSession((s) => addInput(s, text, attachments));
-    } else if (session) {
+    if (session) {
+      const messageId = uid();
       updateSession((s) =>
-        startRun(s, text, {
+        submitMessage(s, text, {
           attachments,
           connected: data.connections.workspace,
+          targetArtifactId: artifactId,
+          messageId,
         }),
       );
     } else {
-      const next = startRun(newSession(), text, {
+      const send = scenario === "deliver" ? submitMessage : startRun;
+      const next = send(newSession(), text, {
         scenario,
         attachments,
         connected: data.connections.workspace,
@@ -250,7 +356,12 @@ export function App() {
         truncated: source.length > 20000,
       });
     }
-    changeAttachments([...attachments, ...parsed]);
+    if (session)
+      updateSession(
+        (s) => ({ ...s, draftAttachments: [...s.draftAttachments, ...parsed] }),
+        session.id,
+      );
+    else setHomeAttachments((old) => [...old, ...parsed]);
     if (parsed.some((f) => f.kind === "metadata"))
       notify("已添加文件信息。此原型仅解析文本文件，未读取图片或 PDF 内容。");
     if (fileRef.current) fileRef.current.value = "";
@@ -302,6 +413,7 @@ export function App() {
         if (
           !connected &&
           r?.scenario === "connection" &&
+          !r.alternateMaterial &&
           r.status === "running"
         )
           return {
@@ -324,7 +436,7 @@ export function App() {
   function archiveSession(id) {
     updateSession((s) => ({ ...s, archived: true }), id);
     if (activeId === id) selectSession(null);
-    notify("对话已归档，可在搜索中找回。", () =>
+    notify("已归档，执行与后续请求仍保留；待处理和新结果可从入口找回。", () =>
       updateSession((s) => ({ ...s, archived: false }), id),
     );
     setModal(null);
@@ -385,6 +497,7 @@ export function App() {
     stopping: "正在停止…",
     stopped: "已停止",
     completed: "本轮已完成",
+    incomplete: "本轮未完成",
     "waiting-input": "需要你补充信息",
     "waiting-connection": "需要连接演示工作区",
     failed: "读取资料失败",
@@ -422,6 +535,16 @@ export function App() {
                 <SquaresFour />
                 <span>工具与连接</span>
               </button>
+              {attention.length > 0 && (
+                <button
+                  className="attention-trigger"
+                  onClick={() => setModal({ type: "attention" })}
+                >
+                  <Tray />
+                  <span>待处理</span>
+                  <span className="attention-count">{attention.length}</span>
+                </button>
+              )}
               <div className="history-heading">
                 <span>对话</span>
                 <div>
@@ -441,9 +564,9 @@ export function App() {
                 {data.sessions
                   .filter((s) => !s.archived)
                   .sort((a, b) => b.updatedAt - a.updatedAt)
-                  .map((s, i) => (
+                  .map((s) => (
                     <div
-                      className={`history-row ${activeId === s.id || (!activeId && i === 0) ? "selected" : ""}`}
+                      className={`history-row ${activeId === s.id ? "selected" : ""}`}
                       key={s.id}
                     >
                       <button
@@ -521,6 +644,16 @@ export function App() {
                 onClick={() => setSidebarOpen(true)}
               />
             )}
+            {attention.length > 0 && (
+              <button
+                className="attention-trigger attention-compact"
+                onClick={() => setModal({ type: "attention" })}
+                aria-label={`待处理 ${attention.length} 件`}
+              >
+                <Tray size={18} />
+                <span>待处理 {attention.length}</span>
+              </button>
+            )}
             {session && (
               <>
                 <button
@@ -561,21 +694,49 @@ export function App() {
             </section>
           ) : (
             <>
-              <div className="messages" aria-label="对话内容">
+              <div className="messages" aria-label="对话内容" ref={messagesRef}>
                 {session.messages.map((message) => (
-                  <div key={message.id} className={`message ${message.role}`}>
+                  <div
+                    key={message.id}
+                    id={`message-${message.id}`}
+                    data-result-id={message.result?.id}
+                    className={`message ${message.role}`}
+                  >
                     {message.role === "assistant" && (
                       <span className="assistant-label">Pamiya</span>
                     )}
                     <div className="message-text">
                       <Markdown>{message.text}</Markdown>
                     </div>
+                    <MessageTreatment
+                      message={message}
+                      onResolve={(id, kind) =>
+                        updateSession((s) =>
+                          resolveMessage(
+                            s,
+                            id,
+                            kind,
+                            data.connections.workspace,
+                          ),
+                        )
+                      }
+                    />
                     {message.attachments?.length > 0 && (
                       <div className="attachment-list">
                         {message.attachments.map((file) => (
                           <span className="file-chip" key={file.id}>
                             <FileText size={16} />
                             <span>{attachmentLabel(file)}</span>
+                            {file.sourceSessionId && (
+                              <button
+                                className="text-button"
+                                onClick={() =>
+                                  selectSession(file.sourceSessionId)
+                                }
+                              >
+                                回到原对话
+                              </button>
+                            )}
                           </span>
                         ))}
                       </div>
@@ -592,9 +753,21 @@ export function App() {
                         }
                         onConnect={() => setModal({ type: "tools" })}
                         onVerify={() => updateSession(reconcileRun)}
+                        onReplaceMaterial={() => setModal({ type: "material" })}
                         onDismiss={() => updateSession(dismissRun)}
                         onAnswer={(text) =>
-                          updateSession((s) => addInput(s, text))
+                          updateSession((s) => submitMessage(s, text))
+                        }
+                      />
+                    )}
+                    {message.runId === run?.id && (
+                      <FollowUps
+                        session={session}
+                        onWithdraw={(id) =>
+                          updateSession((s) => withdrawRequest(s, id))
+                        }
+                        onContinue={(id) =>
+                          updateSession((s) => continueRequest(s, id))
                         }
                       />
                     )}
@@ -638,7 +811,7 @@ export function App() {
         </main>
         {artifact && (
           <section className="artifact-panel" aria-label="成果区">
-            <header className="artifact-header">
+            <header className="artifact-header" ref={artifactHeaderRef}>
               <div>
                 <FileText />
                 <span>
@@ -896,6 +1069,37 @@ export function App() {
 
   function renderModal() {
     const close = () => setModal(null);
+    if (modal.type === "attention")
+      return (
+        <AttentionModal
+          items={attention}
+          onClose={close}
+          onOpen={(item) =>
+            selectSession(item.sessionId, () => {
+              setFocusMessage({
+                sessionId: item.sessionId,
+                messageId: item.messageId ?? item.latestResult?.messageId,
+              });
+              close();
+            })
+          }
+        />
+      );
+    if (modal.type === "material")
+      return (
+        <MaterialModal
+          attachments={attachments}
+          onChooseFile={() => fileRef.current?.click()}
+          onClose={close}
+          onSubmit={(text) => {
+            const messageId = uid();
+            updateSession((s) =>
+              replaceMaterial(s, text, s.draftAttachments, messageId),
+            );
+            close();
+          }}
+        />
+      );
     if (modal.type === "version-conflict")
       return (
         <Modal title="成果已有新版本" onClose={close}>
@@ -981,14 +1185,6 @@ export function App() {
             close();
           }}
           onArchive={() => {
-            if (
-              ACTIVE.includes(currentRun(target)?.status) ||
-              currentRun(target)?.status === "reconciling"
-            ) {
-              close();
-              notify("请先停止执行或核对提交结果，再归档这段对话。");
-              return;
-            }
             leaveEditor(() => archiveSession(target.id));
           }}
           onRestore={() => {
@@ -1053,7 +1249,7 @@ export function App() {
         <Modal title="体验 Pamiya" onClose={close}>
           <div className="modal-body">
             <p className="muted">
-              这是可操作的交互原型：执行由本地脚本模拟，不调用真实模型、外部服务或设备。文件只留在当前浏览器。选择一个场景开始。
+              这是可操作的交互原型：执行由本地脚本模拟，不调用真实模型、外部服务或设备。文件只留在当前浏览器。消息按有限规则演示补充、询问、替换和后续请求；含糊时会询问用途。选择一个场景开始。
             </p>
             <div className="scenario-list">
               {Object.entries(scenarios).map(([key, s]) => (
@@ -1102,6 +1298,7 @@ export function App() {
                         id: uid(),
                         name: `${s.title}（对话）`,
                         kind: "text",
+                        sourceSessionId: s.id,
                         text: s.messages
                           .map((m) => `${m.role}: ${m.text}`)
                           .join("\n")
@@ -1320,6 +1517,7 @@ function RunActivity({
   label,
   onRetry,
   onConnect,
+  onReplaceMaterial,
   onVerify,
   onDismiss,
   onAnswer,
@@ -1329,6 +1527,7 @@ function RunActivity({
   const status = run.status;
   const labels = {
     completed: "本轮已完成",
+    incomplete: "本轮未完成",
     stopped: "已停止",
     interrupted: "演示执行已中断",
   };
@@ -1336,6 +1535,7 @@ function RunActivity({
     <div
       className={`run-activity ${BLOCKED.includes(status) ? "needs-attention" : ""}`}
     >
+      {current && <p className="work-goal">当前目标：{run.goal}</p>}
       <button
         className="activity-toggle"
         onClick={() => setExpanded(!expanded)}
@@ -1390,6 +1590,9 @@ function RunActivity({
               <button className="secondary compact" onClick={onConnect}>
                 连接工作区
                 <ArrowRight size={15} />
+              </button>
+              <button className="text-button" onClick={onReplaceMaterial}>
+                换资料
               </button>
               <button className="text-button" onClick={onDismiss}>
                 结束本轮

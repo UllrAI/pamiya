@@ -79,3 +79,19 @@ The user subsequently found the type too large. This overrides the original scal
 P3: exact font rasterization and subtle icon optical sizes can be adjusted after user feedback. Do not recreate the reference's generated texture or add marketing content to fill whitespace.
 
 final result: passed
+
+## Product lifecycle refinement — 2026-10-16
+
+Scope: product baseline 0.3 in the standalone local prototype. The existing DSH plugin continues to use native DSH conversations; these controls do not establish a second runtime or production orchestration.
+
+- Work stays attached to its original messages, Runs and artifacts. New independent goals create separate artifacts; revisions retain the intended artifact and version history. No Work or Project creation flow was added.
+- Finite local rules demonstrate steering, questions, explicit replacement and follow-ups. Mixed messages retain separate treatment receipts. Unsupported input asks for its intended use. Question answers and artifact content remain scripted demonstrations.
+- Browser checks verified mixed-message treatment, stopping with held follow-ups, explicit continuation, connection replacement with pasted material, and archival without losing the attention entry. Continuing a held independent request produced its own artifact while retaining the earlier report.
+- An explicit replacement during an unknown submitted result remained queued until receipt reconciliation, then started and delivered the new goal without replaying the original notification.
+- The attention list was checked with both action and result groups. Opening it preserved unresolved actions; returning to a visible result cleared only that result. Archived conversations remained reachable at the original message. A page reload retained saved history and result acknowledgements.
+- Desktop and 390 × 844 phone views were inspected. The phone attention dialog and compact entry fit without horizontal document overflow. Browser warning/error logs were empty in the checked flows. Local demonstration screenshots were retained outside the repository.
+- Thirty model tests cover the existing scenarios plus message identity/deduplication, mixed intents, replacement and withdrawal races, delayed clarification against its original artifact, held requests, alternate material, goal grouping, version-specific read acknowledgements, archived attention and storage migration. Model tests do not substitute for production integration or general language understanding.
+- Existing browser data is migrated without clearing conversations, drafts, attachments or artifact versions. Refresh interrupts local execution; it does not start a pending replacement or replay a submitted effect.
+- Verification passed: 30 model tests, four static-hosting tests, production build, code-format check, repository documentation/link check and `git diff --check`.
+
+Production model understanding, authoritative server state, cross-client synchronization, actual external effects and background scheduling remain unimplemented. Native file-chooser replacement, IME, screen-reader announcements, OS keyboards and storage exhaustion were not re-tested end to end in this refinement.

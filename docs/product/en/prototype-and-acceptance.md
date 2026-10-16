@@ -19,6 +19,10 @@
 
 Real integrations retain the home mental model. Models/tools live behind service adapters, resources enter through connections, and runtime facts project into activity and artifacts.
 
+## Prototype and production differences in product baseline 0.3
+
+The prototype implements goal-origin/revision links, limited rule-based steering/question/replacement/follow-up treatment, withdrawal/holding, alternate material, attention groups, and specific result read markers. Archive only organizes history, retaining execution and actions; existing browser data migrates. No Work/Project management entity is added. R18–R19 have local simulated interactions and tests; real semantic understanding, identity, authoritative backend, cross-client sync, and remote stop remain outside this acceptance. The DSH plugin is unchanged in this revision.
+
 ## Walkthrough
 
 1. Submit a goal, inspect activity, and add direction during work. It belongs to the same round.
@@ -53,10 +57,29 @@ Refresh interrupts local simulation and offers explicit continuation. A real cli
 
 Executable model tests cover stop, uncertainty, retry, steering, refresh, versions, and timezone boundaries. Browser checks cover main flows and UI states. [QA](../../../prototype/design-qa.md) records actual checks, not an automatic pass for every production requirement.
 
+## Additional product acceptance for this revision
+
+Use the same report scenario to validate lifecycle, message treatment, and return entry, supplementing A01–A16. Local model tests cover the relevant state boundaries; QA records browser checks and untested cases. Production behavior needs separate acceptance.
+
+| ID | Scenario | Required result |
+|---|---|---|
+| A17 / R18, R07 | Revise after delivery on another day | Return to original goal/artifact; link a new Run without reviving the old one; retain artifact identity/versions |
+| A18 / R05, R18 | Steering, questions, and mixed messages during execution | Shortening joins the current Run; the question gets an answer without changing the goal or conflicting execution; handle mixed intents separately; distinguish receipt/application |
+| A19 / R05, R06, R18 | Explicit replacement | Stop old descendants and track in-flight effects; new goal has a new origin/Run; retain old results and hold old follow-ups; no conflicting start before uncertain stopping settles |
+| A20 / R05, R12 | Follow-up, withdrawal, refresh | Original goal unchanged; inspect/withdraw pending text; no loss/duplicate queue on refresh; create subsequent Runs in order after success; already-started withdrawal becomes stop |
+| A21 / R05, R06, R10 | Follow-ups after stop, final failure, or reconciliation | Hold with continue/withdraw; stop does not immediately launch the next request; future schedules are not paused by default; unresolved effects remain visible |
+| A22 / R09, R18 | Replace material after a connection blocker | Remove original dependency and resume the same Run when sufficient; otherwise state remaining gaps without unconditionally requiring the old connection |
+| A23 / R19, R08, R12, R17 | Return through attention | Reachable on desktop, collapsed sidebar, and 390 px; locate original question/artifact; deduplicate reports/versions per work without merging independent goals in one message; opening list does not clear count |
+| A24 / R19, R10 | Read versus resolved | Viewing an issue leaves Needs your action until resolution; ending cannot clear uncertain effects; viewing the specific result marks it read, without clearing later results |
+| A25 / R19, R08, R12, R13 | Pagination, archived sources, schedules, sync failure | History limits cannot hide unresolved/unread work; archive can organize ongoing conversations while work and attention remain; schedule pause retains prior issues; sync failure never fabricates an empty list |
+| A26 / R18, R02 | Reference ongoing work from a new conversation | Select context and offer return to original without copying execution; only a separate goal gets a new origin, retaining provenance |
+
+End-to-end order: request report → shorten and ask for evidence → supply alternate material → queue and withdraw a follow-up → leave → supply missing input through attention → view delivery → revise the same artifact the next day. Replacement, stop, and held requests are exception branches of this scenario. Formative testing also checks whether users can explain what happened without knowing Session, Run, or Task.
+
 ## Production integration order
 
 1. Identity/Session service, model, one cloud executor, and object storage; serialized Sessions, stable intent IDs, durable results.
-2. Replace local ticks with service events; idempotent submission, cursor reconnection, cancellation acknowledgement, important-effect queries, and conditional artifact writes.
+2. Replace local ticks with service events; implement goal-origin/revision links, message treatment and withdrawable follow-ups, holding after stop, idempotent submission, cursor reconnection, cancellation acknowledgement, important-effect queries, conditional artifact writes, and attention/read projections. Prioritize A17–A26.
 3. One needed connector; verify scope, revocation, capability readiness, environment invalidation; then scheduling service and minimal memory storage.
 4. Desktop/Edge/devices, specialists, and event rules as user goals justify them; verify environment ownership, remote task tracking, and actual stop support.
 

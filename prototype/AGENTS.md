@@ -10,6 +10,10 @@
 - Existing authorization covers ordinary work; ask only for concrete missing input or scope.
 - Distinguish requested stop, confirmed stop, and an unknown important result. Never offer blind replay of a submitted action.
 - The repository-root Chinese drafts are user-owned; do not overwrite or publish them as prototype artifacts.
+- Product baseline 0.3 keeps work identity in message origins, Runs and artifact references; do not add a Work/Project creation flow.
+- Demonstrate steering, questions, replacement and follow-ups with explicit deterministic rules; clarify unsupported input rather than claiming model understanding.
+- Stop holds unstarted follow-ups; replacement retains old output. Archive only organizes history. Attention separates required actions from unseen results and remains available for archived conversations.
+- Preserve existing browser data when migrating storage. Read acknowledgements apply to specific visible results, never to unresolved actions or future versions.
 
 Run the local server yourself and open the preview in the browser available to this environment. Do not give the user server-start instructions when you can run it.
 
