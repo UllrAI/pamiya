@@ -19,6 +19,10 @@ Verified: 2026-10-16. The public screenshots show an actual DSH Web Host, not `p
 
 ![Tasks completed by both workers](../../packages/dsh-plugin/design/activity.zh-CN.png)
 
+## Public package installation verification
+
+The public GitHub Release URL for `v0.1.0` was verified in a fresh, isolated DSH `0.2.0-rc.2` Web profile. URL installation succeeded with `@pamiya/dsh-plugin@0.1.0` and selected the plugin configuration layer. A separate public download matched the published SHA-256. Source builds are unnecessary for users; see the [quickstart](quickstart.md) for Desktop UI installation.
+
 ## Native Agent end-to-end verification
 
 The Desktop Host used its existing DeepSeek-V41-Flash / High configuration in minimal mode. The Agent called Pamiya tools, executed `system.check` and `text.stats` on both physical computers, and returned the real results to the conversation. All four Host tasks retained the same DSH Session correlation and settled as `succeeded`; the remote journal received Host acknowledgements.

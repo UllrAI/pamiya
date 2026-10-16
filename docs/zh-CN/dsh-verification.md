@@ -19,6 +19,10 @@
 
 ![两个节点完成任务](../../packages/dsh-plugin/design/activity.zh-CN.png)
 
+## 公开安装包验证
+
+`v0.1.0` 的公开 GitHub Release 地址已在全新、隔离的 DSH `0.2.0-rc.2` Web profile 中验证：通过 URL 成功安装 `@pamiya/dsh-plugin@0.1.0`，组合配置已选中插件层；重新公开下载的文件与发布的 SHA-256 一致。使用者无需源码构建，桌面界面安装步骤见[上手指南](quickstart.md)。
+
 ## 原生 Agent 端到端验证
 
 在桌面宿主的“极简模式”中，使用已有 DeepSeek-V41-Flash / High 模型配置。Agent 调用 Pamiya 工具，在两个实际节点分别执行 `system.check` 和 `text.stats`，将真实结果返回对话。Host 中四条任务均保存了同一 DSH Session 关联，并得到 `succeeded`；远端执行日志已收到 Host 的结果确认。
