@@ -2,11 +2,11 @@
 
 [Usage guide](dsh-plugin.md) · [简体中文](../zh-CN/dsh-verification.md)
 
-Verified: 2026-10-16. Screenshots show an actual DSH Web Host, not `prototype/`.
+Verified: 2026-10-16. The public screenshots show an actual DSH Web Host, not `prototype/`; native Desktop and model acceptance results are recorded below.
 
 ## Verified
 
-- Both the `0.2.0-rc.2` and `0.2.1-alpha.4` DSH Web compositions loaded the plugin, sidebar, authenticated API and tools. The Desktop plugin is installed; native-window acceptance remained pending because the Mac was locked.
+- Both the `0.2.0-rc.2` and `0.2.1-alpha.4` DSH Web compositions loaded the plugin, sidebar, authenticated API and tools. Native Desktop `0.2.0-rc.2` also passed plugin loading, automatic local enrollment, remote pairing and actual two-worker execution.
 - In `0.2.1-alpha.4`, a local macOS Worker and an independent Linux x64 server Worker connected through public RunMQTT. Both completed statistics on the same synthetic text and returned real results.
 - A remote 90-second wait was started and stopped through the UI. The UI received Stopped, and the remote journal recorded cancellation with the Host acknowledgement.
 - The Linux Worker uses a separate Node.js 24.22.0 runtime from the official release with SHA-256 verification and a systemd service. Restarting the service restored its connection and retained the execution journal. Configuration/journal permissions are 600.
@@ -19,9 +19,20 @@ Verified: 2026-10-16. Screenshots show an actual DSH Web Host, not `prototype/`.
 
 ![Tasks completed by both workers](../../packages/dsh-plugin/design/activity.zh-CN.png)
 
+## Native Agent end-to-end verification
+
+The Desktop Host used its existing DeepSeek-V41-Flash / High configuration in minimal mode. The Agent called Pamiya tools, executed `system.check` and `text.stats` on both physical computers, and returned the real results to the conversation. All four Host tasks retained the same DSH Session correlation and settled as `succeeded`; the remote journal received Host acknowledgements.
+
+| Worker | Platform | Node.js | Statistics for `Hello Pamiya` |
+|---|---|---|---|
+| This computer | darwin | 24.18.1 | 12 characters, 1 line, 2 words |
+| Linux test worker | linux | 24.22.0 | 12 characters, 1 line, 2 words |
+
+Manual pairing-command display/hiding was also exercised in the native window. The Linux service was moved from the isolated alpha test Host to the Desktop Host, retaining its existing systemd service and earlier test journals.
+
 ## Pending verification
 
-Final operation in the native Desktop window, a real model initiating the tools, and Windows/other desktop process behavior remain pending. Personal API keys were not copied into a test Host to demonstrate a model call; all test inputs were synthetic. Private files and explicitly enabled commands passed local real-process tests and were not exercised through the public service.
+Windows/other desktop process behavior remains pending. Real-model testing used the Desktop Host’s existing configuration without copying personal API keys into an isolated test Host. All inputs were synthetic. Private files and explicitly enabled commands passed local real-process tests and were not exercised through the public service.
 
 This evidence establishes the current implementation path, not a multi-tenant production platform, OS sandbox or automatic failover.
 

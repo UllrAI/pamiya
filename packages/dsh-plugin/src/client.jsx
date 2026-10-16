@@ -157,6 +157,9 @@ const copy = {
   command: ["复制启动命令", "Copy start command"],
   code: ["复制配对码", "Copy pairing code"],
   copied: ["已复制", "Copied"],
+  manualCommand: ["手动复制命令", "Copy command manually"],
+  showCommand: ["显示命令以手动复制", "Show command for manual copy"],
+  hideCommand: ["隐藏命令", "Hide command"],
   clipboardError: [
     "无法写入剪贴板，请选择文本复制。",
     "Clipboard unavailable. Select and copy the text.",
@@ -635,11 +638,14 @@ function AddWorker({
             <Button onClick={() => copyText(invitation.code)}>
               {t("code")}
             </Button>
+            <Button onClick={() => setManual(!manual)}>
+              {t(manual ? "hideCommand" : "showCommand")}
+            </Button>
           </div>
           {manual && (
             <textarea
               readOnly
-              aria-label={t("code")}
+              aria-label={t("manualCommand")}
               value={command}
               onFocus={(e) => e.target.select()}
             />

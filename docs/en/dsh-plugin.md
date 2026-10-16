@@ -44,7 +44,7 @@ The public service supports synthetic tests only. It has no availability guarant
 
 ## Add another computer or server
 
-Choose **Add worker → Another computer or server**, name it and create pairing. The interface supplies a single-file Worker download, Node.js installation link, macOS/Linux and Windows PowerShell commands and a 30-minute pairing expiry. The command contains connection credentials and a worker key. Share it only with your own computer, never public docs, issues or screenshots. Create a separate pairing for each computer.
+Choose **Add worker → Another computer or server**, name it and create pairing. The interface supplies a single-file Worker download, Node.js installation link, macOS/Linux and Windows PowerShell commands and a 30-minute pairing expiry. If the clipboard is unavailable, select **Show command for manual copy**. The command contains connection credentials and a worker key. Share it only with your own computer, never public docs, issues or screenshots. Create a separate pairing for each computer.
 
 The Worker saves configuration and execution history in its user directory, using private permissions supported by the platform. An already paired worker continues after its original pairing code expires. Restart it with the ID shown in the interface:
 
