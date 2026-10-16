@@ -2,24 +2,11 @@
 
 **English** · [简体中文](README.zh-CN.md)
 
-**Let DSH take the capabilities you need to the right computer.**
+**One conversation. Many workers.**
 
-Pamiya is a DeepSeek Harness (DSH) plugin. Keep your conversation, model and artifacts in DSH while delegating work to local or remote DSH, Codex, Claude Code and Pi agents, or calling your own script actions.
+Pamiya is a distributed Worker plugin for DeepSeek Harness (DSH). From one conversation, delegate tasks to this computer or remote workers running DSH, Codex, Claude Code or Pi, or call custom script actions. Choose where work runs and follow its progress, results and artifacts in the original DSH conversation.
 
-## Skills travel with the task
-
-A Skill should bring more than a prompt when work moves to another computer. Pamiya **transfers complete Skills on demand, checks dependencies, then prepares and continues the original task**:
-
-1. Name a worker and Skill in conversation, or open **Pamiya → worker → Skills**.
-2. Transfer `SKILL.md`, scripts and resources; check declared commands, environment variables, Node/Python packages and platform requirements.
-3. Missing items produce a clear **Needs preparation** state. Choose **Prepare and continue** to install supported dependencies in an isolated worker environment and continue the same task.
-4. The native Agent uses the prepared capability; progress, results and callbacks return to the original conversation.
-
-Remote Skill files use HTTPS relay storage, so Host and Worker need outbound access only. MQTT carries small file references. Content is cached by version, avoiding repeat transfers. Existing sessions keep their pinned version; new tasks can use updates. Local Skills, worker-owned Skills and model authentication keep separate ownership, without copying an entire user profile.
-
-[Skills guide and dependency manifest](docs/en/skills.md) · [Guided S3 setup](docs/en/file-storage.md) · [Recorded verification](docs/en/dsh-verification.md)
-
-## What else is included
+## Distributed work from one conversation
 
 | Capability | Experience |
 |---|---|
@@ -29,6 +16,7 @@ Remote Skill files use HTTPS relay storage, so Host and Worker need outbound acc
 | Share your model by default | Use the DSH model channel, or select independent configuration per worker Agent |
 | Define your own capabilities | Expose script actions with input schemas for the Agent to call |
 | Follow work through completion | Durable progress, business-result acknowledgements, cancellation and reconciliation; completion returns to the original conversation |
+| Skills on demand | Transfer the Skills a task needs, check dependencies, then prepare and continue |
 
 ## Start in minutes
 
@@ -43,6 +31,19 @@ Desktop installation needs no Git, source checkout or separate Node.js. Open **P
 To try Skills, open a worker’s **Skills → Run synthetic example**. It uses bundled test resources to show dependency checking, preparation, script execution and real result delivery end to end.
 
 [Self-service quickstart](docs/en/quickstart.md) · [Give this document to DSH](docs/en/install-with-dsh.md) · [All installation options](INSTALL.md) · [Agents and custom actions](docs/en/agent-workers.md)
+
+## Skills travel with the task
+
+A Skill should bring more than a prompt when work moves to another computer. Pamiya **transfers complete Skills on demand, checks dependencies, then prepares and continues the original task**:
+
+1. Name a worker and Skill in conversation, or open **Pamiya → worker → Skills**.
+2. Transfer `SKILL.md`, scripts and resources; check declared commands, environment variables, Node/Python packages and platform requirements.
+3. Missing items produce a clear **Needs preparation** state. Choose **Prepare and continue** to install supported dependencies in an isolated worker environment and continue the same task.
+4. The native Agent uses the prepared capability; progress, results and callbacks return to the original conversation.
+
+Remote Skill files use HTTPS relay storage, so Host and Worker need outbound access only. MQTT carries small file references. Content is cached by version, avoiding repeat transfers. Existing sessions keep their pinned version; new tasks can use updates. Local Skills, worker-owned Skills and model authentication keep separate ownership, without copying an entire user profile.
+
+[Skills guide and dependency manifest](docs/en/skills.md) · [Guided S3 setup](docs/en/file-storage.md) · [Recorded verification](docs/en/dsh-verification.md)
 
 ## Current boundaries
 

@@ -1,6 +1,6 @@
 {
   "name": "Pamiya",
-  "baseline": "0.1",
+  "baseline": "0.3",
   "palette": {
     "ink": "#101A20",
     "surface": "#F4F7F8",
@@ -13,18 +13,28 @@
     "latin": "Inter, system-ui, sans-serif",
     "cjk": "Noto Sans CJK SC, PingFang SC, sans-serif"
   },
-  "direction": "Minimal flat infrastructure graphics. One durable intent reaches many execution environments.",
-  "illustration": "Dark panoramic header, precise routing lines, restrained mint and amber accents.",
+  "direction": "One conversation coordinates distributed local and remote Workers; Skills transfer is a supporting capability.",
+  "illustration": "Light panoramic masthead with one conversation window and three worker endpoints representing a laptop, server and desktop.",
   "banner": {
     "width": 1600,
     "height": 400,
-    "aspect_ratio": "4:1"
+    "aspect_ratio": "4:1",
+    "palette": {
+      "background": "#F8F9FB",
+      "ink": "#20272E",
+      "blue": "#7C99C4",
+      "sage": "#89A99D"
+    },
+    "tagline": "One conversation. Many workers.",
+    "descriptor": "Distributed workers for DSH",
+    "generation": "Built-in imagegen; center-cropped and resized for README display"
   },
   "social_preview": {
     "width": 1280,
     "height": 640,
-    "aspect_ratio": "2:1"
+    "aspect_ratio": "2:1",
+    "artwork": "Earlier dark routing-network illustration"
   },
   "diagrams": "Editable Mermaid, neutral light surfaces, literal responsibilities and readable labels.",
-  "status": "Architecture proposal; no production runtime included."
+  "status": "DSH plugin and Worker runtime, with bilingual product and architecture documentation."
 }

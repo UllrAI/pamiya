@@ -2,24 +2,11 @@
 
 [English](README.md) · **简体中文**
 
-**让 DSH 带着你需要的能力，在合适的电脑上完成工作。**
+**一个对话，多处执行。**
 
-Pamiya 是 DeepSeek Harness（DSH）的插件。沿用熟悉的对话、模型和成果界面，把任务交给本机或远端的 DSH、Codex、Claude Code、Pi，也能调用用户定义的脚本动作。
+Pamiya 是 DeepSeek Harness（DSH）的分布式 Worker 插件。在同一个对话里，把任务交给本机或远端节点上的 DSH、Codex、Claude Code、Pi，也能调用自定义脚本动作。选择在哪里执行，在原对话中查看进度、结果与产物。
 
-## 能力跟着任务走
-
-在本机装好的 Skill，换到另一台电脑时不应只剩一段提示词。Pamiya **按需同步完整 Skill，检查依赖，准备好后继续原任务**：
-
-1. 在对话中指定节点和 Skill，或打开 **Pamiya → 节点 → Skills**。
-2. 同步 `SKILL.md`、脚本与资源；检查声明的命令、环境变量、Node/Python 依赖及平台要求。
-3. 有缺项时明确显示“需要准备”。选择 **准备并继续**，在节点的独立环境安装可准备的依赖，然后继续同一个任务。
-4. Agent 使用同步的能力执行工作；进度、结果和回调回到原对话。
-
-远端 Skill 文件走 HTTPS 中转，双方只需出站连接，MQTT 只传小型文件引用。内容按版本缓存，同一版本无需重复传输；已有会话固定使用原版本，新任务才采用更新。本地 Skill、远端 Skill、模型鉴权各自有清晰的归属，无需复制整份用户配置。
-
-[Skills 完整使用指南与依赖声明](docs/zh-CN/skills.md) · [S3 首次配置引导](docs/zh-CN/file-storage.md) · [实际验收记录](docs/zh-CN/dsh-verification.md)
-
-## 还有什么
+## 在一个对话里调度多个节点
 
 | 能力 | 使用体验 |
 |---|---|
@@ -29,6 +16,7 @@ Pamiya 是 DeepSeek Harness（DSH）的插件。沿用熟悉的对话、模型�
 | 默认复用模型 | 通过 DSH 共享模型通道；也可为节点上的 Agent 选择独立配置 |
 | 自定义能力 | 声明脚本动作和输入 schema，供 Agent 调用 |
 | 任务有着落 | 持久化进度、业务结果确认、停止与核对；完成后回到原对话 |
+| Skills 按需同步 | 携带任务需要的 Skills，检查依赖，准备好后继续执行 |
 
 ## 几分钟开始
 
@@ -43,6 +31,19 @@ https://github.com/UllrAI/pamiya/releases/download/v0.3.0/pamiya-dsh-plugin-0.3.
 第一次体验 Skills，可打开节点的 **Skills → 运行合成示例**。示例只使用内置测试资源，能看到依赖检查、准备、脚本执行和真实回传全过程。
 
 [自助上手](docs/zh-CN/quickstart.md) · [交给 DSH 代装](docs/zh-CN/install-with-dsh.md) · [全部安装方式](INSTALL.md) · [Agent 与自定义动作](docs/zh-CN/agent-workers.md)
+
+## 能力跟着任务走
+
+在本机装好的 Skill，换到另一台电脑时不应只剩一段提示词。Pamiya **按需同步完整 Skill，检查依赖，准备好后继续原任务**：
+
+1. 在对话中指定节点和 Skill，或打开 **Pamiya → 节点 → Skills**。
+2. 同步 `SKILL.md`、脚本与资源；检查声明的命令、环境变量、Node/Python 依赖及平台要求。
+3. 有缺项时明确显示“需要准备”。选择 **准备并继续**，在节点的独立环境安装可准备的依赖，然后继续同一个任务。
+4. Agent 使用同步的能力执行工作；进度、结果和回调回到原对话。
+
+远端 Skill 文件走 HTTPS 中转，双方只需出站连接，MQTT 只传小型文件引用。内容按版本缓存，同一版本无需重复传输；已有会话固定使用原版本，新任务才采用更新。本地 Skill、远端 Skill、模型鉴权各自有清晰的归属，无需复制整份用户配置。
+
+[Skills 完整使用指南与依赖声明](docs/zh-CN/skills.md) · [S3 首次配置引导](docs/zh-CN/file-storage.md) · [实际验收记录](docs/zh-CN/dsh-verification.md)
 
 ## 当前边界
 
