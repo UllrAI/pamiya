@@ -36,6 +36,8 @@ Manual pairing-command display/hiding was also exercised in the native window. T
 
 ## Conversation worker selection (v0.1.1)
 
+After publication, the complete public `v0.1.1` URL also installed successfully in a fresh isolated DSH Web profile; the installed package version was confirmed as `0.1.1`.
+
 Native DSH verification covered the Execution worker picker, direct Manage workers navigation, and selection before a new conversation’s first message, and target retention after a full Desktop restart. With Linux selected, a request to check “the selected computer” and count Hello Pamiya produced two new successful Linux-bound tasks without naming the worker in the message (linux / Node.js 24.22.0). In a separate new conversation, the model explained that ping was unavailable without shell capability and produced no substitute Pamiya execution task.
 
 New automation covers conversation isolation, persisted selection, execution binding, conflicting IDs, no reassignment for paused/removed targets, and retries reading the original task after selection changes. Model context explains execution location; the plugin does not intercept every native DSH tool.
