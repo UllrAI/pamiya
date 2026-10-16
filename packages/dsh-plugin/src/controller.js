@@ -72,6 +72,7 @@ export class Controller {
       workers: [],
       tasks: [],
     };
+    this.state.sessionTargets ??= {};
     await this.store.save(this.state);
     this.timer = setInterval(() => {
       void this.tick().catch(() => {});
@@ -92,6 +93,37 @@ export class Controller {
     });
     this.queue = next.catch(() => {});
     return next;
+  }
+  conversationTarget(sessionId) {
+    const workerId = this.state.sessionTargets[sessionId] ?? null;
+    return {
+      workerId,
+      worker:
+        this.snapshot().workers.find((worker) => worker.id === workerId) ??
+        null,
+    };
+  }
+  async selectTarget(sessionId, workerId) {
+    await this.mutate((state) => {
+      if (
+        workerId &&
+        !state.workers.some(
+          (worker) => worker.id === workerId && !worker.revoked,
+        )
+      )
+        throw new Error("节点已移除，请重新选择");
+      if (workerId) state.sessionTargets[sessionId] = workerId;
+      else delete state.sessionTargets[sessionId];
+    });
+    return this.conversationTarget(sessionId);
+  }
+  conversationContext(sessionId) {
+    const { workerId, worker } = this.conversationTarget(sessionId);
+    const instructions =
+      "Pamiya tools execute on connected workers. Native DSH bash/file/browser tools still run on the DSH host; never present their results as coming from a remote worker. If a remote worker lacks an action, explain that limitation instead of substituting a host tool.";
+    if (!workerId)
+      return `${instructions}\nPamiya target: automatic. Use pamiya_workers to resolve a computer explicitly named by the user; omit workerId otherwise (prefers this computer, then an available capable worker).`;
+    return `${instructions}\nThe user selected this conversation's Pamiya execution target: ${JSON.stringify({ id: workerId, label: worker?.label ?? null, status: worker?.status ?? "removed", actions: worker?.actions ?? [] })}. Use pamiya_execute without workerId for execution requests on the selected computer. All Pamiya executions in this conversation are bound to this target until the user changes the picker. Do not switch computers or use host tools as a substitute. The selection does not move the Agent or its native tools to that computer.`;
   }
   async broker() {
     return {
@@ -569,7 +601,7 @@ export class Controller {
           ? "所选节点离线、暂停、正忙或未提供该能力"
           : "没有可用节点，请先添加节点或等待当前任务完成",
       );
-    const worker = candidates[0],
+    const worker = candidates.find((worker) => worker.local) ?? candidates[0],
       live = this.live.get(worker.id);
     const task = {
       id: randomUUID(),
@@ -692,8 +724,18 @@ export class Controller {
     const intentKey = createHash("sha256")
       .update(`${sessionId}:${exec.callId}`)
       .digest("hex");
+    const selected = this.state.sessionTargets[sessionId];
+    // Retries must read the original task, even after the picker changes.
+    const existing = this.state.tasks.some(
+      (task) => task.intentKey === intentKey,
+    );
+    if (!existing && selected && args.workerId && args.workerId !== selected)
+      throw new Error(
+        "本对话已指定执行节点；请使用所选节点，或先在执行节点菜单切换为自动/其他节点",
+      );
     let task = await this.dispatch({
       ...args,
+      workerId: selected ?? args.workerId,
       input: args.input ?? {},
       intentKey,
       sessionId,

@@ -128,6 +128,79 @@ async function fixture(t, { autoLocal = false } = {}) {
   };
 }
 
+test("conversation targets persist, isolate sessions and bind actual execution without fallback", async (t) => {
+  const f = await fixture(t);
+  const first = await f.add("First computer");
+  const second = await f.add("Linux computer");
+  const exec = (sessionId, callId) => ({
+    agent: { session: { id: sessionId } },
+    callId,
+  });
+  const args = { action: "text.stats", input: { text: "Hello Pamiya" } };
+  await f.controller.selectTarget("selected-session", second.id);
+  assert.equal(f.controller.conversationTarget("other-session").workerId, null);
+  assert.match(
+    f.controller.conversationContext("selected-session"),
+    /Linux computer/,
+  );
+  assert.match(
+    f.controller.conversationContext("selected-session"),
+    /never present their results as coming from a remote/,
+  );
+  let result = await f.controller.toolRun(
+    args,
+    exec("selected-session", "selected-1"),
+  );
+  assert.equal(result.worker, "Linux computer");
+  assert.equal(result.status, "succeeded");
+  await assert.rejects(
+    f.controller.toolRun(
+      { ...args, workerId: first.id },
+      exec("selected-session", "conflict"),
+    ),
+    /已指定执行节点/,
+  );
+  result = await f.controller.toolRun(
+    { ...args, workerId: first.id },
+    exec("other-session", "explicit-1"),
+  );
+  assert.equal(result.worker, "First computer");
+  await f.restart();
+  assert.equal(
+    f.controller.conversationTarget("selected-session").workerId,
+    second.id,
+  );
+  await until(() =>
+    f.controller
+      .snapshot()
+      .workers.every((worker) => worker.status === "ready"),
+  );
+  await f.controller.manage(second.id, "pause");
+  await assert.rejects(
+    f.controller.toolRun(args, exec("selected-session", "paused")),
+    /所选节点/,
+  );
+  await f.controller.selectTarget("selected-session", first.id);
+  result = await f.controller.toolRun(
+    args,
+    exec("selected-session", "selected-1"),
+  );
+  assert.equal(result.worker, "Linux computer");
+  await f.controller.selectTarget("selected-session", null);
+  result = await f.controller.toolRun(args, exec("selected-session", "auto"));
+  assert.equal(result.worker, "First computer");
+  await f.controller.selectTarget("selected-session", second.id);
+  await f.controller.manage(second.id, "remove");
+  assert.equal(
+    f.controller.conversationTarget("selected-session").worker.status,
+    "revoked",
+  );
+  await assert.rejects(
+    f.controller.toolRun(args, exec("selected-session", "removed")),
+    /所选节点/,
+  );
+});
+
 test("encrypted messages reject tampering, wrong direction and expired input", () => {
   const config = { namespace: `sandbox/pamiya/${randomUUID()}` },
     workerId = randomUUID(),

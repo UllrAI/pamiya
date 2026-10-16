@@ -13,7 +13,7 @@ Pamiya is a **personal Agent for ongoing work**: express a goal, provide context
 Open **Plugins → Add plugin** in DSH, paste this URL, install and enable:
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz
 ```
 
 The prebuilt Desktop plugin needs no Git, source checkout or separate Node.js. Open **Pamiya → Connection** to set up the test connection; this computer joins automatically. [Full usage and implementation guide](docs/en/dsh-plugin.md).

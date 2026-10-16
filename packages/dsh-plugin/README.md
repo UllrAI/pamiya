@@ -5,7 +5,7 @@ An installable DSH extension with guided MQTT setup, multiple workers and durabl
 Install the prebuilt release through **DSH → Plugins → Add plugin**:
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz
 ```
 
 Select **Enable now**, then open Pamiya to configure the connection. Desktop UI installation needs no separate Node.js or Git. [User quickstart](https://github.com/UllrAI/pamiya/blob/main/docs/en/quickstart.md) · [简体中文](https://github.com/UllrAI/pamiya/blob/main/docs/zh-CN/quickstart.md) · [Ask DSH to install](https://github.com/UllrAI/pamiya/blob/main/docs/en/install-with-dsh.md).

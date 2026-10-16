@@ -10,9 +10,9 @@ This is a self-contained installation task. A user asking you to follow it autho
 
 ## Installation target
 
-- Package: `@pamiya/dsh-plugin`, version `0.1.0`.
-- Release: https://github.com/UllrAI/pamiya/releases/tag/v0.1.0
-- Installation spec: `https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz`
+- Package: `@pamiya/dsh-plugin`, version `0.1.1`.
+- Release: https://github.com/UllrAI/pamiya/releases/tag/v0.1.1
+- Installation spec: `https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz`
 - Verified Hosts: DSH `0.2.0-rc.2` and `0.2.1-alpha.4`. Other versions remain subject to the Host’s compatibility checks.
 - Preserve existing models, conversations, workspaces, other plugins and connection settings. This prebuilt package needs no clone, source build or npm publication.
 
@@ -24,7 +24,7 @@ This is a self-contained installation task. A user asking you to follow it autho
 ```json
 {
   "action": "install_bundle",
-  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz",
+  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz",
   "enabled": true
 }
 ```

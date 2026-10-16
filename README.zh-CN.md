@@ -13,7 +13,7 @@ Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提
 在 DSH 中打开 **插件 → 添加插件**，粘贴以下地址，安装并启用：
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz
 ```
 
 预构建桌面插件不需要 Git、源码或额外安装 Node.js。打开 **Pamiya → 连接设置** 填入测试连接，本机会自动加入。[完整使用与实现说明](docs/zh-CN/dsh-plugin.md)。

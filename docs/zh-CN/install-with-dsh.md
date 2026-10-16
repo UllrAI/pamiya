@@ -10,9 +10,9 @@
 
 ## 安装目标
 
-- 插件包：`@pamiya/dsh-plugin`，版本 `0.1.0`。
-- 发布页：https://github.com/UllrAI/pamiya/releases/tag/v0.1.0
-- 安装 spec：`https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz`
+- 插件包：`@pamiya/dsh-plugin`，版本 `0.1.1`。
+- 发布页：https://github.com/UllrAI/pamiya/releases/tag/v0.1.1
+- 安装 spec：`https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz`
 - 已验证宿主：DSH `0.2.0-rc.2`、`0.2.1-alpha.4`。其他版本以宿主的兼容性检查结果为准。
 - 保留已有模型、对话、工作区、其他插件和连接配置。安装此预构建包不需要克隆仓库、构建源码或发布 npm 包。
 
@@ -24,7 +24,7 @@
 ```json
 {
   "action": "install_bundle",
-  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz",
+  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz",
   "enabled": true
 }
 ```

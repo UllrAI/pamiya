@@ -12,7 +12,7 @@ Verified: 2026-10-16. The public screenshots show an actual DSH Web Host, not `p
 - The Linux Worker uses a separate Node.js 24.22.0 runtime from the official release with SHA-256 verification and a systemd service. Restarting the service restored its connection and retained the execution journal. Configuration/journal permissions are 600.
 - Plugin reload restored the managed local Worker. Automated tests also verify that a deliberately stopped Worker remains stopped and that the local identity is not duplicated.
 - Chinese/English switching, default remote pairing, prevention of duplicate local workers, task lists and status feedback were exercised in the real Host.
-- Fourteen automated tests cover real MQTT workers, deduplication, confirmed cancellation, pause, Host restart, forced Worker death, path scope, private files/commands, local capability settings, pre-aborted tools, Host API and installation settings.
+- Fifteen automated tests cover real MQTT workers, deduplication, confirmed cancellation, pause, Host restart, forced Worker death, path scope, private files/commands, local capability settings, pre-aborted tools, Host API and installation settings.
 - Plugin production dependencies have zero audit findings. Existing low-severity KaTeX/Mermaid findings in documentation tooling remain separate; this implementation does not introduce an unrelated major upgrade.
 
 ![Local and remote workers](../../packages/dsh-plugin/design/two-workers.en.png)
@@ -33,6 +33,12 @@ The Desktop Host used its existing DeepSeek-V41-Flash / High configuration in mi
 | Linux test worker | linux | 24.22.0 | 12 characters, 1 line, 2 words |
 
 Manual pairing-command display/hiding was also exercised in the native window. The Linux service was moved from the isolated alpha test Host to the Desktop Host, retaining its existing systemd service and earlier test journals.
+
+## Conversation worker selection (v0.1.1)
+
+Native DSH verification covered the Execution worker picker, direct Manage workers navigation, and selection before a new conversation’s first message, and target retention after a full Desktop restart. With Linux selected, a request to check “the selected computer” and count Hello Pamiya produced two new successful Linux-bound tasks without naming the worker in the message (linux / Node.js 24.22.0). In a separate new conversation, the model explained that ping was unavailable without shell capability and produced no substitute Pamiya execution task.
+
+New automation covers conversation isolation, persisted selection, execution binding, conflicting IDs, no reassignment for paused/removed targets, and retries reading the original task after selection changes. Model context explains execution location; the plugin does not intercept every native DSH tool.
 
 ## Pending verification
 

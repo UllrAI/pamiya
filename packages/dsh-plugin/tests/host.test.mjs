@@ -5,7 +5,8 @@ import { apply } from "../src/host.js";
 test("DSH adapter registers authenticated shared API routes, structured failures and actual tools", async () => {
   const routes = new Map(),
     tools = new Map(),
-    effects = [];
+    effects = [],
+    contexts = [];
   let stored;
   const ctx = {
     storageDomain: {
@@ -28,13 +29,14 @@ test("DSH adapter registers authenticated shared API routes, structured failures
       fetch: { register: (route) => routes.set(route.path, route) },
     },
     tools: { register: (tool) => tools.set(tool.name, tool) },
+    systemPrompt: { context: (entry) => contexts.push(entry) },
     effect: (factory) => {
       effects.push(factory());
     },
   };
   try {
     await apply(ctx);
-    assert.equal(routes.size, 12);
+    assert.equal(routes.size, 13);
     assert.equal(tools.size, 3);
     const call = async (endpoint, payload = {}) => {
       const response = await routes.get(`/api/pamiya/${endpoint}`).fetch(
@@ -55,6 +57,17 @@ test("DSH adapter registers authenticated shared API routes, structured failures
     assert.equal(state.type, "server-response");
     assert.equal(state.result.ok, true);
     assert.equal(state.result.value.connection.status, "disconnected");
+    const target = await call("conversation", { sessionId: "session-1" });
+    assert.equal(target.result.value.workerId, null);
+    assert.match(
+      contexts[0].text({ agent: { session: { id: "session-1" } } }),
+      /Native DSH/,
+    );
+    const invalidTarget = await call("conversation", {
+      sessionId: "session-1",
+      workerId: "invalid",
+    });
+    assert.equal(invalidTarget.result.ok, false);
     const invalid = await call("invite", { label: "" });
     assert.equal(invalid.result.ok, false);
     assert.equal(typeof invalid.result.error.code, "string");

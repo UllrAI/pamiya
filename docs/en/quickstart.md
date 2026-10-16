@@ -8,7 +8,7 @@ Pamiya lets DSH work across your computers. Keep using DSH’s conversations, mo
 
 Install and open [DeepSeek Harness](https://www.deepseek.com/harness/). Verified Hosts are Desktop `0.2.0-rc.2` and Web `0.2.1-alpha.4`. **Desktop UI installation needs no Git, source checkout or separate Node.js installation.** Only standalone Workers on other computers require Node.js 22.19 or newer.
 
-The current release is the `v0.1.0` preview on [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.1.0). It is not published to npm; use the complete installation URL below.
+The current release is the `v0.1.1` preview on [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.1.1). It is not published to npm; use the complete installation URL below.
 
 ## 1. Install the plugin
 
@@ -16,7 +16,7 @@ The current release is the `v0.1.0` preview on [GitHub Releases](https://github.
 2. Paste this complete URL into the package/installation field and select **Install**:
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz
 ```
 
 3. Select **Enable now** when installation finishes. If DSH requests a restart, fully quit and reopen it; closing a window may leave the application running.
@@ -40,6 +40,20 @@ Send this in a DSH conversation:
 > Use Pamiya to list ready workers, check the connection on this computer, and count the text Hello Pamiya. Report the actual results.
 
 Expect the local operating system and Node.js version, plus **12 characters, 1 line and 2 words**. Conversations require DSH’s model login/configuration; Pamiya does not add a separate model account.
+
+## Choose a computer in a conversation
+
+The **Execution worker** selector above the message box lists this computer and connected workers. No IDs to memorize.
+
+- **Auto · or name a worker**: say “Use Pamiya to check the system on Linux test worker.” Without a named target, prefer this computer, then an available worker supporting the action.
+- **Pin a worker**: select the Linux worker, then say “Check the selected computer’s system information.” Each conversation remembers its own selection. Switch to Auto before comparing multiple computers.
+- **Manage workers**: opens configuration to add, rename, pause workers or change this computer’s capabilities.
+
+Changes affect future tasks. Offline, busy or unsupported targets report an error without switching computers. Removed targets remain visibly selected until you choose again.
+
+**The selector controls only Pamiya tools.** Native DSH bash, file and browser tools still run on the DSH host; the Agent itself has not moved. The public test connection only supports demos and system checks. Selecting Linux does not enable commands such as `ping`: use a private MQTT connection and enable shell execution on that Worker first.
+
+![Select a Linux worker in a conversation and receive its real results (Chinese UI)](../../packages/dsh-plugin/design/conversation-worker.zh-CN.png)
 
 ## 4. Optional: connect another computer
 

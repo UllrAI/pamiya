@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "./client.css";
 
 const copy = {
+  executionTarget: ["执行节点", "Execution worker"],
+  automatic: ["自动 · 可按名称指定", "Auto · or name a worker"],
+  targetScope: ["仅 Pamiya 工具", "Pamiya tools only"],
+  targetHint: [
+    "记住本对话的选择。自动时优先这台电脑，也可在消息中指定节点名。切换只影响后续任务。DSH 自带工具仍在本机运行。",
+    "Remembered for this conversation. Auto prefers this computer; you can also name a worker in your message. Changes affect future tasks. Native DSH tools still run on this computer.",
+  ],
+  manageWorkers: ["管理节点", "Manage workers"],
+  removedTarget: ["所选节点已移除", "Selected worker removed"],
   updatePairing: ["更新连接 / 重新配对", "Update connection / pair again"],
   stopRemote: [
     "先在远程电脑按 Ctrl+C 停止旧进程，再运行新命令。",
@@ -1407,6 +1416,99 @@ function Panel({ ctx, t }) {
     </section>
   );
 }
+function ConversationTarget({ ctx, sessionId, t }) {
+  const [data, setData] = useState(null),
+    [error, setError] = useState(""),
+    [saving, setSaving] = useState(false);
+  const changing = useRef(false),
+    revision = useRef(0);
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      if (changing.current) return;
+      const requestedRevision = revision.current;
+      try {
+        const result = await ctx.connection.rpc.call(
+          "/api",
+          "pamiya/conversation",
+          { sessionId },
+        );
+        if (!result.ok) throw new Error(result.error.message);
+        if (
+          active &&
+          !changing.current &&
+          requestedRevision === revision.current
+        ) {
+          setData(result.value);
+          setError("");
+        }
+      } catch {
+        if (active) setError(t("hostUnavailable"));
+      }
+    };
+    setData(null);
+    void refresh();
+    const timer = setInterval(refresh, 3000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [ctx, sessionId, t]);
+  const select = async (event) => {
+    const workerId = event.target.value || null;
+    revision.current++;
+    changing.current = true;
+    setSaving(true);
+    try {
+      const result = await ctx.connection.rpc.call(
+        "/api",
+        "pamiya/conversation",
+        { sessionId, workerId },
+      );
+      if (!result.ok) throw new Error(result.error.message);
+      setData(result.value);
+      setError("");
+    } catch (failure) {
+      setError(failure.message);
+    } finally {
+      changing.current = false;
+      setSaving(false);
+    }
+  };
+  return (
+    <div className="pamiya-target" title={t("targetHint")}>
+      <label>
+        <span>{t("executionTarget")}</span>
+        <select
+          aria-label={t("executionTarget")}
+          value={data?.workerId ?? ""}
+          disabled={!data || saving}
+          onChange={select}
+        >
+          <option value="">{t("automatic")}</option>
+          {data?.workerId &&
+            !data.workers.some((worker) => worker.id === data.workerId) && (
+              <option value={data.workerId}>{t("removedTarget")}</option>
+            )}
+          {data?.workers.map((worker) => (
+            <option key={worker.id} value={worker.id}>
+              {worker.label} · {t(worker.status)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <span className="pamiya-target-scope">{t("targetScope")}</span>
+      <button type="button" onClick={() => ctx.layout.selectPanel("pamiya")}>
+        {t("manageWorkers")}
+      </button>
+      {error && (
+        <span role="alert" className="pamiya-target-error">
+          {error}
+        </span>
+      )}
+    </div>
+  );
+}
 export const inject = ["slots", "locale", "connection", "layout"];
 export function apply(ctx) {
   ctx.effect(
@@ -1439,6 +1541,18 @@ export function apply(ctx) {
         label: () => ctx.locale.bind("pamiya")("title"),
       },
       Icon,
+    ),
+  );
+  ctx.slots.inject("conversation.input.dock", () =>
+    ctx.slots.register(
+      {
+        name: "conversation.input.dock",
+        id: "pamiya-target",
+        order: 10,
+        locale: "pamiya",
+        inject: (sessionId) => ({ ctx, sessionId }),
+      },
+      ConversationTarget,
     ),
   );
 }

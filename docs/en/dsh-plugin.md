@@ -58,11 +58,17 @@ A remote worker goes offline when its process exits. DSH-managed local workers s
 
 Broker addresses/modes are bound to paired workers and require removing them before changing. Credential updates reconnect the Host and managed local workers. Use **Update connection / pair again** for remote workers, stop the old process, then run the new command while retaining the worker identity and execution journal.
 
+## Conversation execution worker
+
+Above the composer, choose Auto or pin a worker. Each conversation persists its own choice. The Host enforces the selected target for Pamiya execution and rejects conflicting tool IDs. Auto allows explicitly named workers and otherwise prefers this computer. Changes affect new tasks; retries of the same tool call read the original task rather than replaying on a new target. Offline, paused, busy, removed or unsupported workers never silently fall back.
+
+The Host adds the current selection and capabilities to model context, explaining that native DSH tools still run on the Host. This is model guidance, not interception or migration of every native DSH tool. Manage workers opens configuration. Use Auto for multi-worker comparisons. See the [quickstart](quickstart.md).
+
 ## Manage workers
 
 - Search by name, filter status, rename, pause/resume assignments, check connections, start/stop local processes, re-pair and remove workers.
 - Pause blocks new assignments; it does not stop in-flight work. Removal retains history and first requires resolving unfinished or uncertain tasks. Stop remote processes on their own computers.
-- A tool action binds one worker, boot and Attempt. An explicitly selected worker is never silently replaced; without a selection, choose one ready worker offering the action.
+- A tool action binds one worker, boot and Attempt. An explicitly selected worker is never silently replaced; in Auto without an explicit ID, prefer this computer, then a ready worker offering the action.
 - **Try multiple workers** sends the same synthetic text to every available worker and compares real results. It requires two ready workers and never fabricates nodes.
 - Each Worker currently has capacity 1. Agents can call different workers concurrently. Busy, paused, offline or unresolved workers receive no new actions.
 

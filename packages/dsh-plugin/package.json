@@ -1,6 +1,6 @@
 {
   "name": "@pamiya/dsh-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Pamiya remote workers and guided setup for DeepSeek Harness",
   "type": "module",
   "license": "Apache-2.0",

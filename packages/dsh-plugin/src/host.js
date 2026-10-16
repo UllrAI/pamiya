@@ -6,7 +6,13 @@ import { Controller, runmqttPreset } from "./controller.js";
 import { errorText } from "./protocol.js";
 
 export const name = "pamiya";
-export const inject = ["storageDomain", "credentials", "connection", "tools"];
+export const inject = [
+  "storageDomain",
+  "credentials",
+  "connection",
+  "tools",
+  "systemPrompt",
+];
 const idSchema = z.string().uuid();
 const dispatchSchema = z
   .object({
@@ -40,6 +46,7 @@ const stateSpec = {
         enabled: z.boolean(),
         workers: z.array(z.record(z.string(), z.unknown())),
         tasks: z.array(z.record(z.string(), z.unknown())),
+        sessionTargets: z.record(z.string(), idSchema).default({}),
       }),
     },
   },
@@ -76,6 +83,15 @@ export async function apply(ctx, config = {}) {
     "pamiya: runtime",
   );
   await controller.init();
+  ctx.systemPrompt.context({
+    name: "pamiya:execution-target",
+    order: 90,
+    interpolate: false,
+    text: ({ agent }) =>
+      agent?.session?.id
+        ? controller.conversationContext(agent.session.id)
+        : "",
+  });
   if (config.bootstrapDemo === true && !controller.state.enabled) {
     void (async () => {
       await controller.saveBroker({
@@ -126,6 +142,28 @@ export async function apply(ctx, config = {}) {
   }
   const handle = async (endpoint, payload) => {
     try {
+      if (endpoint === "conversation") {
+        const input = z
+          .object({
+            sessionId: z.string().min(1).max(160),
+            workerId: idSchema.nullable().optional(),
+          })
+          .strict()
+          .parse(payload);
+        const target =
+          input.workerId === undefined
+            ? controller.conversationTarget(input.sessionId)
+            : await controller.selectTarget(input.sessionId, input.workerId);
+        return {
+          ok: true,
+          value: {
+            ...target,
+            workers: controller
+              .snapshot()
+              .workers.filter((worker) => !worker.revoked),
+          },
+        };
+      }
       if (endpoint === "snapshot")
         return { ok: true, value: controller.snapshot() };
       if (endpoint === "preset")
@@ -229,6 +267,7 @@ export async function apply(ctx, config = {}) {
     }
   };
   for (const endpoint of [
+    "conversation",
     "snapshot",
     "preset",
     "saveBroker",
@@ -275,7 +314,10 @@ export async function apply(ctx, config = {}) {
     parameters: { type: "object", properties: {}, additionalProperties: false },
     output,
     isConcurrencySafe: () => true,
-    execute: async () => ({
+    execute: async (_args, exec) => ({
+      target: exec?.agent?.session?.id
+        ? controller.conversationTarget(exec.agent.session.id)
+        : null,
       connection: controller.connection.status,
       publicTest: controller.state.broker.publicTest,
       workers: controller
@@ -292,14 +334,14 @@ export async function apply(ctx, config = {}) {
   ctx.tools.register({
     name: "pamiya_execute",
     description:
-      "Execute one action on a Pamiya worker and await its business result. List workers first. Bind a workerId for a particular computer. demo.echo/text.stats input={text}; demo.wait={seconds}; system.check={}; fs.list={path}; fs.read={path}; fs.write={path,text}; shell.run={command,timeoutSeconds}. Files/shell require a private connection; shell also needs explicit worker permission. Unknown/stop_requested does not mean success; use pamiya_task to reconcile, never repeat an uncertain action.",
+      "Execute one action on a Pamiya worker and await its business result. Honor this conversation's execution target; omit workerId when a target is selected. In automatic mode, list workers first and bind workerId for a computer named by the user. Never replace a missing remote action with a native host tool. demo.echo/text.stats input={text}; demo.wait={seconds}; system.check={}; fs.list={path}; fs.read={path}; fs.write={path,text}; shell.run={command,timeoutSeconds}. Files/shell require a private connection; shell also needs explicit worker permission. Unknown/stop_requested does not mean success; use pamiya_task to reconcile, never repeat an uncertain action.",
     parameters: {
       type: "object",
       properties: {
         workerId: {
           type: "string",
           description:
-            "Worker ID from pamiya_workers; omit for first available capable worker",
+            "Omit to use the conversation target. In automatic mode, set an ID from pamiya_workers for an explicitly named computer; otherwise prefers this computer then an available capable worker. Conflicting IDs are rejected when a target is selected.",
         },
         action: {
           type: "string",
