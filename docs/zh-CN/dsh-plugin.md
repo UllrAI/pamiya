@@ -13,11 +13,11 @@ flowchart TB
   Agent[DSH Agent / Session] -->|pamiya tools| Host[Pamiya Host plugin]
   Host <--> State[DSH storageDomain + credentials]
   Host <--> Broker[MQTT Broker]
-  Broker <--> Local[Local Worker]
+  Host <-->|Local IPC| Local[Local Worker]
   Broker <--> Remote[Remote Worker]
 ```
 
-Host 与本机 Worker 在同一台电脑上，以独立进程运行。所有 Worker 主动向 Broker 建立出站连接，图中双向箭头表示消息流。Agent 与权威聊天历史仍由 DSH 提供。
+Host 与本机 Worker 在同一台电脑上，以独立进程运行。本机 Worker 使用进程 IPC；远程 Worker 主动向 Broker 建立出站连接，图中双向箭头表示消息流。Agent 与权威聊天历史仍由 DSH 提供。
 
 ## 安装
 
@@ -37,12 +37,14 @@ macOS 安装器优先使用官方桌面应用自带的 CLI，不依赖额外注�
 
 ## 第一次使用
 
-1. 在 DSH 侧栏打开 **Pamiya → 连接设置**。选公共测试连接，点击“填入当前测试参数”，再“保存并连接”。账号从 RunMQTT 的官方公开页面读取，不把轮换密码写死在仓库。
-2. 连接成功后，本机 Worker 自动加入。DSH 使用自己的 Node 兼容运行环境启动，无需额外终端或配对；主动停止的本机节点不会因重连而再次启动。
-3. 出现“可用”后检查连接，或在“节点体验”中运行回声、文本统计、可取消的等待任务。状态、结果与错误都来自实际 Worker。
-4. 回到原来的 DSH 对话，让 Agent 先调用 `pamiya_workers`，再用 `pamiya_execute` 选择节点与能力。模型登录和 API Key 由 DSH 管理；Pamiya 不另设模型账号。
+1. 打开 **Pamiya → 计算节点**。本机自动加入，无需配置 MQTT、额外终端或配对；主动停止后不会自动再次启动。
+2. 等待“可用”，检查连接或运行节点体验，状态与结果来自真实 Worker。
+3. 节点详情可检测、安装、配置 DSH、Codex、Claude Code、Pi，默认复用 DSH 模型与鉴权，也可选择独立配置。
+4. 回到对话，用 `pamiya_workers` 查询能力、`pamiya_execute` 执行动作、`pamiya_delegate` 委派完整 Agent；长任务的完成结果返回发起对话。
 
-公共服务只用于合成测试。它没有可用性保证，可能重置状态或轮换账号，不承载个人文件与真实业务动作。插件在该模式下不开放文件和命令工具；端到端加密不改变公共服务的使用范围。[RunMQTT 参数及限制](https://runmqtt.com/public-broker)
+本机通过 IPC 工作。只有接入远端时才设置 MQTT；公共 RunMQTT 只用于合成验证，账号从官方页面读取，不写死轮换密码。远端真实业务使用私有连接。[RunMQTT 参数及限制](https://runmqtt.com/public-broker)
+
+完整步骤、模型来源、自定义动作、续接、回调与产物见[Agent 与自定义动作](agent-workers.md)。
 
 ## 添加其他电脑或服务器
 
@@ -56,11 +58,11 @@ node pamiya-worker.mjs start --id <worker-id>
 
 运行进程退出后，远程节点会离线。本机托管节点随 DSH 启动；远程服务器长期运行可以由自己的进程管理器托管同一个 `start` 命令，不假装浏览器关闭后还有平台调度器运行。
 
-连接地址或模式与已配对节点绑定，变更前需要移除节点。更新 MQTT 账号会重连 Host 与本机托管 Worker；远程节点在详情中选择“更新连接 / 重新配对”，先停止旧进程，再运行新命令，保留原节点身份及执行日志。
+连接地址、模式或账号变更保留节点身份与执行日志，修改前先处理在途任务。Host 会重连，本机仍使用 IPC；远程节点在详情中选择“更新连接 / 重新配对”，先停止旧进程，再运行新命令，保留原节点身份及执行日志。
 
 ## 对话执行节点
 
-输入框上方可选择“自动”或固定节点，并由当前对话分别持久保存。固定选择由 Host 强制用于 Pamiya 执行；工具传入冲突 ID 会被拒绝，不能绕过界面选择。自动时允许用名称指定任意节点，未指定则优先本机。切换只影响新任务；相同工具调用的重试读取原任务，不按新选择重放。离线、暂停、正忙、已移除或缺少能力时不静默改派。
+输入框底部工具栏可选择“自动”或固定节点，并由当前对话分别持久保存。固定选择由 Host 强制用于 Pamiya 执行；工具传入冲突 ID 会被拒绝，不能绕过界面选择。自动时允许用名称指定任意节点，未指定则优先本机。切换只影响新任务；相同工具调用的重试读取原任务，不按新选择重放。离线、暂停、正忙、已移除或缺少能力时不静默改派。
 
 Host 将当前选择及能力注入模型上下文，并提醒原生 DSH 工具仍在本机；这属于模型指引，不是对所有 DSH 原生工具的拦截或迁移。“管理节点”直达管理页。多节点比较时选择“自动”。详细操作见[上手指南](quickstart.md)。
 
@@ -74,9 +76,9 @@ Host 将当前选择及能力注入模型上下文，并提醒原生 DSH 工具�
 
 ## 文件与命令能力
 
-自有私有 MQTT 连接可使用 `fs.list`、`fs.read`、`fs.write`。本机节点详情可设置允许读写的已有文件夹，并单独选择是否允许命令执行；保存后重启节点，存在未完成或待核对任务时先处理任务。远程配对命令可以添加 `--workspace` 指定工作目录；路径检查拒绝越界与指向外部的符号链接。目录内读写不等于操作系统隔离。
+本机 IPC 或自有私有 MQTT 连接可使用 `fs.list`、`fs.read`、`fs.write`。本机节点详情可设置允许读写的已有文件夹，并单独选择是否允许命令执行；保存后重启节点，存在未完成或待核对任务时先处理任务。远程配对命令可以添加 `--workspace` 指定工作目录；路径检查拒绝越界与指向外部的符号链接。目录内读写不等于操作系统隔离。
 
-`shell.run` 还需要在 Worker 启动时显式添加 `--allow-shell`。它以 Worker 所属用户身份执行命令，工作目录不是系统沙箱；只给自己信任的 Host 配对。非零命令退出码保留输出并报告失败。Worker 不自带浏览器自动化、桌面控制、ESP32 固件或第三方 Agent 委托适配器。
+`shell.run` 还需要在 Worker 启动时显式添加 `--allow-shell`。它以 Worker 所属用户身份执行命令，工作目录不是系统沙箱；只给自己信任的 Host 配对。非零命令退出码保留输出并报告失败。Worker 已适配四种完整 Agent，能力遵循各 Agent 原生运行环境；不另带浏览器引擎、桌面控制或 ESP32 固件。
 
 ## 状态与恢复
 
@@ -100,11 +102,11 @@ Host 将当前选择及能力注入模型上下文，并提醒原生 DSH 工具�
 插件采用一个精简的版本 1 契约；[平台协议提案](capabilities-and-protocol.md)不是它当前的线格式。
 
 - Topic：`sandbox/pamiya/<namespace-id>/workers/<worker-id>/down` 用于 Host 命令，`/up` 用于 Worker 事件；QoS 1，不使用 retained。
-- 明文消息字段：`v`、唯一消息 `id`、时间戳 `at`、`workerId`、`bootId`、`kind`、可选 `taskId` 与 `payload`。`kind` 为 `status`、`dispatch`、`accepted`、`result`、`resultAck`、`query` 或 `cancel`。
+- 明文消息字段：`v`、唯一消息 `id`、时间戳 `at`、`workerId`、`bootId`、`kind`、可选 `taskId` 与 `payload`。`kind` 为 `status`、`dispatch`、`accepted`、`result`、`resultAck`、`query` 、`cancel`、`progress` 或 `model`。
 - 传输层使用 AES-256-GCM，`iv`、`tag`、`data` 为 Base64url，附加认证数据为 `<namespace>|<workerId>|<up-or-down>`。消息需属于选定节点，且与本机时间相差不超过 120 秒；机器时钟需要同步。
 - Agent Session 与 DSH `callId` 生成持久意图键；Task UUID 绑定一个 Worker、boot 与 Attempt 1。重复分派查询 Worker 日志，传输消息 ID 不充当业务去重键。
 - 分派载荷为 `{action, input, deadline}`；结果为 `{status, result?, error?, bootId?}`，Host 持久保存后才确认。状态包含已开放能力与容量；心跳间隔 5 秒，Host 在 18 秒无响应后认为在线信息已过期。
-- 输入上限 24 KB，接收方拒绝超过 96 KB 的数据包；大结果返回截断预览，保留实际执行状态。文件能力用于范围内的小文件读写，不伪装成产物传输服务。
+- 输入上限 24 KB，接收方拒绝超过 96 KB 的数据包；大结果返回截断预览，保留实际执行状态。模型上下文在现有加密通道中分帧，单次模型请求/响应最多 4 MB；任务产物支持登记引用与分块读取，见 Agent 文档。
 - 重连保留 Broker 连接空间与节点身份；不引入续租、fencing、签名授权、自动重放或第二套调度器。
 
 准确实现以 `packages/dsh-plugin` 的 `src/protocol.js`、`src/controller.js`、`src/worker.js` 为准。

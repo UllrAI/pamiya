@@ -8,7 +8,7 @@ Pamiya 让 DSH 使用你的多台电脑执行工作。对话、模型和账号�
 
 先安装并打开 [DeepSeek Harness](https://www.deepseek.com/harness/)。已验证桌面版 `0.2.0-rc.2` 和 Web Host `0.2.1-alpha.4`。**桌面界面安装不需要 Git、源码或额外安装 Node.js。** 仅其他电脑上的独立 Worker 需要 Node.js 22.19 或更新版本。
 
-当前发布为 `v0.1.1` 预览版，安装包在 [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.1.1)。尚未发布到 npm，请使用下面的完整安装地址。
+当前发布为 `v0.2.0` 预览版，安装包在 [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.2.0)。尚未发布到 npm，请使用下面的完整安装地址。
 
 ## 1. 安装插件
 
@@ -16,7 +16,7 @@ Pamiya 让 DSH 使用你的多台电脑执行工作。对话、模型和账号�
 2. 把下面整条地址粘贴到包名/安装地址输入框，点击 **安装**：
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz
 ```
 
 3. 完成后选择 **立即启用**。如果提示需要重启，完全退出 DSH 后重新打开；只关闭窗口不一定会退出应用。
@@ -24,14 +24,13 @@ https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.
 
 如果你更希望让 Agent 完成安装，直接使用[这份安装任务文档](install-with-dsh.md)。
 
-## 2. 连接并使用本机节点
+## 2. 使用本机节点
 
-1. 打开 **Pamiya → 连接设置**，选择 **RunMQTT 公共测试连接**。
-2. 点击 **填入当前测试参数 → 保存并连接**。账号由插件从官方页面读取，无需自己查找或注册。
-3. 回到 **计算节点**，等待“这台电脑”显示 **可用**；本机会自动加入，不需要再次添加。
-4. 点击 **检查连接**，在 **运行记录** 中看到“已完成”。
+1. 打开 **Pamiya → 计算节点**，本机自动显示为“这台电脑”。不需要先配置 MQTT 或再次添加本机。
+2. 等待 **可用** 后点击 **检查连接**，在 **运行记录** 查看真实结果。
+3. 节点详情的 **Agent 能力** 显示 DSH、Codex、Claude Code、Pi；缺少时点击安装，随后进行合成验证。
 
-公共连接适合回声、等待、文本统计与连接检查等演示；处理个人文件或执行命令时，改用自己的私有 MQTT 服务。普通试用不需要另建数据库或控制后台。
+本机通过 DSH 托管的本地通道工作。默认复用 DSH 模型与鉴权，可选 Agent 自己的独立配置，详见[Agent 与自定义动作](agent-workers.md)。
 
 ## 3. 让 Agent 做第一次工作
 
@@ -43,9 +42,9 @@ https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.
 
 ## 在对话里选择哪台电脑执行
 
-输入框上方的 **执行节点** 会列出本机和已接入的电脑，无需记住节点 ID。
+输入框底部工具栏的 **执行节点** 会列出本机和已接入的电脑，无需记住节点 ID。
 
-- **自动 · 可按名称指定**：可以说“用 Pamiya 在 Linux 测试节点检查系统”。未指定时优先本机，再选择可用且支持该能力的节点。
+- **自动选择**：可以说“用 Pamiya 在 Linux 测试节点检查系统”。未指定时优先本机，再选择可用且支持该能力的节点。
 - **固定某个节点**：选中“Linux 测试节点”，再说“检查所选电脑的系统信息”。选择保存在当前对话，切换对话分别记忆；要同时比较多台电脑，先切回“自动”。
 - **管理节点**：直接打开配置页，可添加、重命名、暂停节点或调整本机能力。
 
@@ -53,14 +52,16 @@ https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.
 
 **选择器只控制 Pamiya 工具的执行位置。** DSH 自带的 bash、文件和浏览器工具仍在 DSH 本机运行，Agent 本身也没有迁到远端。公共测试连接仅支持演示与系统检查，选中 Linux 不等于可以执行 `ping` 等 Shell 命令；需要先使用私有 MQTT 连接，并在对应 Worker 启用命令能力。
 
-![对话中选择 Linux 节点并获得真实结果](../../packages/dsh-plugin/design/conversation-worker.zh-CN.png)
+![对话中选择 Linux 节点并获得真实结果](../../packages/dsh-plugin/design/worker-picker.zh-CN.png)
 
 ## 4. 可选：再接入一台电脑
 
-1. 选择 **添加节点 → 另一台电脑或服务器**，填写名称，创建配对。
+1. 先到 **连接设置 → RunMQTT 公共测试连接 → 填入当前测试参数 → 保存并连接**。随后选择 **添加节点 → 另一台电脑或服务器**，填写名称，创建配对。
 2. 在另一台电脑安装 [Node.js 22.19 或更新版本](https://nodejs.org/en/download)，并把界面下载的 Worker 放进那台电脑的“下载”文件夹。
 3. 在 Pamiya 选择对应系统，复制启动命令，在**另一台电脑**的终端运行。剪贴板不可用时，点击 **显示命令以手动复制**。
 4. 回到 DSH，等第二个节点显示 **可用**，再点击 **体验多节点**。
+
+公共连接只用于固定合成 Agent 任务、回声、等待、文本统计及系统检查。远端真实工作使用自己的私有连接；本机能力不受公共 MQTT 设置影响。
 
 本机不用重复安装 Worker。配对码仅交给自己的那台电脑，每台分别配对；不要把它放到公开文档里。终端关闭或电脑休眠后，远端可能离线；服务器长期运行可按[运行说明](dsh-plugin.md)交给进程管理器托管。
 

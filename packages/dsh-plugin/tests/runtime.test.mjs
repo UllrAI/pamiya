@@ -508,7 +508,7 @@ test("already aborted Agent tool never creates a task", async (t) => {
   assert.equal(f.controller.state.tasks.length, 0);
 });
 
-test("local access settings require a private connection and take effect after restart", async (t) => {
+test("local access settings take effect after restart without exposing local files to MQTT", async (t) => {
   const f = await fixture(t);
   await f.controller.saveBroker({ ...f.config, publicTest: false });
   await until(() => f.controller.connection.status === "connected");

@@ -10,9 +10,9 @@ This is a self-contained installation task. A user asking you to follow it autho
 
 ## Installation target
 
-- Package: `@pamiya/dsh-plugin`, version `0.1.1`.
-- Release: https://github.com/UllrAI/pamiya/releases/tag/v0.1.1
-- Installation spec: `https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz`
+- Package: `@pamiya/dsh-plugin`, version `0.2.0`.
+- Release: https://github.com/UllrAI/pamiya/releases/tag/v0.2.0
+- Installation spec: `https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz`
 - Verified Hosts: DSH `0.2.0-rc.2` and `0.2.1-alpha.4`. Other versions remain subject to the Host’s compatibility checks.
 - Preserve existing models, conversations, workspaces, other plugins and connection settings. This prebuilt package needs no clone, source build or npm publication.
 
@@ -24,7 +24,7 @@ This is a self-contained installation task. A user asking you to follow it autho
 ```json
 {
   "action": "install_bundle",
-  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz",
+  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz",
   "enabled": true
 }
 ```
@@ -33,7 +33,7 @@ For an installed disabled copy, use `set_bundle` with `target="@pamiya/dsh-plugi
 
 3. Follow the actual result. Continue after `applied`; for `restart-required`, ask the user to fully quit and reopen DSH before verification. Download completion or a pending restart does not establish readiness.
 4. Call `list_bundles` again to verify installation and enablement. Call `pamiya_workers` once the tool catalog refreshes; finish any required restart first.
-5. An unconfigured MQTT connection is expected on first install. Guide the user through **Pamiya → Connection → RunMQTT public test connection → Load current test parameters → Save and connect**. The local Worker joins automatically; do not add a duplicate.
+5. An unconfigured MQTT connection is expected. This computer joins automatically through the local channel without a public service or duplicate enrollment. Open **Pamiya → Connection** only when adding remote computers.
 6. Once `pamiya_workers` reports a ready Worker, pass its actual ID to `pamiya_execute` with `action="system.check"`, `input={}`. Optionally run `text.stats` with `{"text":"Hello Pamiya"}`, expecting 12 characters, 1 line and 2 words. Judge success from actual tool results.
 7. Report the actual installed version, completed stage, local readiness and how to add another computer. Say “installed and verified” only after real execution succeeds.
 

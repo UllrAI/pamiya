@@ -39,3 +39,5 @@ Pamiya 面向长期承担用户目标的 Personal Agent，将控制循环、持�
 [DSH 插件安装与使用](dsh-plugin.md)。
 
 [用户上手与安装](quickstart.md) · [交给 DSH 的安装任务](install-with-dsh.md)。
+
+[Agent、模型复用与自定义动作](agent-workers.md)。

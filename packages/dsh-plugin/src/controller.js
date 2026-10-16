@@ -1,7 +1,8 @@
 import mqtt from "mqtt";
+import { ModelChannel } from "./model-channel.js";
 import { randomBytes, randomUUID, createHash } from "node:crypto";
 import { resolve } from "node:path";
-import { readFile } from "node:fs/promises";
+import { readFile, mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import {
@@ -43,9 +44,14 @@ export class Controller {
     secrets,
     home,
     autoLocal = false,
+    modelCall,
+    onComplete,
     workerFile = fileURLToPath(new URL("../dist/worker.js", import.meta.url)),
   }) {
     this.store = store;
+    this.modelCall = modelCall;
+    this.onComplete = onComplete;
+    this.modelChannels = new Map();
     this.secrets = secrets;
     this.home = home;
     this.autoLocal = autoLocal;
@@ -77,6 +83,7 @@ export class Controller {
     this.timer = setInterval(() => {
       void this.tick().catch(() => {});
     }, 2000);
+    if (this.autoLocal) await this.ensureLocal();
     if (this.state.enabled) await this.connect();
     for (const worker of this.state.workers)
       if (worker.local && worker.autoStart && !worker.revoked)
@@ -138,7 +145,9 @@ export class Controller {
       workers: this.state.workers.map((worker) => {
         const live = this.live.get(worker.id),
           online =
-            this.connection.status === "connected" &&
+            (worker.local
+              ? this.children.has(worker.id)
+              : this.connection.status === "connected") &&
             live &&
             Date.now() - live.at < 18000;
         return {
@@ -165,8 +174,14 @@ export class Controller {
                 lastSeen: live.at,
                 platform: live.platform,
                 actions: live.actions,
+                capabilities: live.capabilities ?? [],
+                agents: live.agents ?? [],
               }
             : {}),
+          workspace: worker.local
+            ? worker.workspace ||
+              resolve(this.home, "pamiya", "workers", worker.id, "workspace")
+            : worker.workspace,
           localRunning: this.children.has(worker.id),
         };
       }),
@@ -184,16 +199,6 @@ export class Controller {
       ["sent", "running", "stop_requested"].includes(task.status),
     );
     if (active) throw new Error("还有任务正在执行，请先完成或停止后再修改连接");
-    const changesConnection = ["url", "publicTest"].some(
-      (key) => config[key] !== prior[key],
-    );
-    if (
-      changesConnection &&
-      this.state.workers.some((worker) => !worker.revoked)
-    )
-      throw new Error(
-        "已有节点绑定当前连接。请先移除节点，再修改连接并重新配对",
-      );
     await this.secrets.set("broker", { password: config.password });
     const { password, ...visible } = config;
     await this.mutate((state) => {
@@ -268,30 +273,45 @@ export class Controller {
     });
   }
   async send(workerId, kind, payload, taskId) {
-    if (!this.client?.connected) throw new Error("连接尚未就绪");
     const key = (await this.secrets.get(`worker-${workerId}`))?.key;
     const worker = this.state.workers.find(
       (item) => item.id === workerId && !item.revoked,
     );
     if (!key || !worker) throw new Error("节点已移除或配对信息不存在");
     const config = await this.broker();
-    await this.client.publishAsync(
-      topic(config, workerId, "down"),
-      seal(
-        config,
+    const value = seal(
+      config,
+      workerId,
+      key,
+      "down",
+      packet(
         workerId,
-        key,
-        "down",
-        packet(
-          workerId,
-          this.live.get(workerId)?.bootId ?? randomUUID(),
-          kind,
-          payload,
-          taskId,
-        ),
+        this.live.get(workerId)?.bootId ?? randomUUID(),
+        kind,
+        payload,
+        taskId,
       ),
-      { qos: 1, retain: false },
     );
+    if (worker.local) {
+      const child = this.children.get(workerId);
+      if (!child?.connected) throw new Error("本机节点尚未启动");
+      await new Promise((done, reject) =>
+        child.send(
+          {
+            type: "pamiya-host",
+            topic: topic(config, workerId, "down"),
+            data: value.toString("base64"),
+          },
+          (error) => (error ? reject(error) : done()),
+        ),
+      );
+      return;
+    }
+    if (!this.client?.connected) throw new Error("连接尚未就绪");
+    await this.client.publishAsync(topic(config, workerId, "down"), value, {
+      qos: 1,
+      retain: false,
+    });
   }
   async receive(config, name, data) {
     const workerId = name.split("/").at(-2);
@@ -313,7 +333,7 @@ export class Controller {
         !payload ||
         !Array.isArray(payload.actions) ||
         payload.actions.some((action) => typeof action !== "string") ||
-        payload.actions.length > 12
+        payload.actions.length > 64
       )
         return;
       if (!worker.paired && worker.expiresAt < Date.now()) return;
@@ -342,6 +362,50 @@ export class Controller {
       (item) => item.id === message.taskId && item.workerId === workerId,
     );
     if (!task) return;
+    if (message.kind === "model") {
+      if (
+        !["sent", "running"].includes(task.status) ||
+        task.input.modelSource === "independent" ||
+        !task.modelRoute ||
+        message.bootId !== task.bootId
+      )
+        return;
+      let channel = this.modelChannels.get(workerId);
+      if (!channel) {
+        channel = new ModelChannel({
+          send: (frame, id) => this.send(workerId, "model", frame, id),
+          handle: (request, id, signal) => {
+            const current = this.state.tasks.find(
+              (item) => item.id === id && item.workerId === workerId,
+            );
+            if (!current || !["sent", "running"].includes(current.status))
+              throw new Error("任务已结束");
+            return this.modelCall(current.modelRoute, request, signal);
+          },
+        });
+        this.modelChannels.set(workerId, channel);
+      }
+      await channel.receive(message.payload, task.id);
+      return;
+    }
+    if (
+      message.kind === "progress" &&
+      message.bootId === task.bootId &&
+      !terminal.has(task.status)
+    ) {
+      await this.mutate((state) => {
+        const current = state.tasks.find((item) => item.id === task.id);
+        current.progress = {
+          phase: String(message.payload?.phase ?? "running").slice(0, 160),
+          text:
+            typeof message.payload?.text === "string"
+              ? message.payload.text.slice(-2000)
+              : "",
+          at: Date.now(),
+        };
+      });
+      return;
+    }
     if (message.kind === "accepted") {
       if (message.bootId !== task.bootId || task.status !== "sent") return;
       await this.mutate((state) => {
@@ -366,6 +430,10 @@ export class Controller {
         const current = state.tasks.find((item) => item.id === task.id);
         if (["succeeded", "failed", "cancelled"].includes(current.status))
           return;
+        if (current.status !== result.status && current.callbackDelivered) {
+          current.callbackDelivered = false;
+          current.callbackRevision = (current.callbackRevision ?? 0) + 1;
+        }
         current.status = result.status;
         current.result = result.result ?? null;
         current.error =
@@ -391,7 +459,7 @@ export class Controller {
     }
   }
   async invite(label, local = false) {
-    if (this.connection.status !== "connected")
+    if (!local && this.connection.status !== "connected")
       throw new Error("请先完成连接设置");
     if (
       local &&
@@ -461,24 +529,38 @@ export class Controller {
     const config = { ...(await this.broker()) };
     const key = (await this.secrets.get(`worker-${id}`))?.key;
     const directory = resolve(this.home, "pamiya", "workers", id);
+    const workspace = worker.workspace || resolve(directory, "workspace");
+    await mkdir(workspace, { recursive: true, mode: 0o700 });
     await atomicJson(resolve(directory, "config.json"), {
       workerId: id,
       key,
       label: worker.label,
       broker: config,
-      workspace: worker.workspace || directory,
+      workspace,
       allowShell: Boolean(worker.allowShell),
     });
     // Desktop owns a Node-compatible Electron executable; preserve its runtime mode.
     const child = spawn(
       process.execPath,
-      [this.workerFile, "start", "--directory", directory],
+      [this.workerFile, "start", "--directory", directory, "--managed-local"],
       {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" },
-        stdio: ["ignore", "pipe", "pipe"],
+        stdio: ["ignore", "pipe", "pipe", "ipc"],
       },
     );
     this.children.set(id, child);
+    child.on("message", (message) => {
+      if (message?.type !== "pamiya-worker") return;
+      this.incoming = this.incoming
+        .then(() =>
+          this.receive(
+            config,
+            message.topic,
+            Buffer.from(message.data, "base64"),
+          ),
+        )
+        .catch(() => {});
+    });
     child.stdout.on("data", () => {});
     child.stderr.on("data", () => {});
     child.once("exit", () => {
@@ -497,8 +579,6 @@ export class Controller {
       (item) => item.id === id && item.local && !item.revoked,
     );
     if (!worker) throw new Error("未找到本机节点");
-    if (this.state.broker.publicTest)
-      throw new Error("公共测试连接不开放文件与命令能力");
     // Resolve before stopping: an invalid directory must leave the current worker intact.
     const { realpath, stat } = await import("node:fs/promises");
     const directory = await realpath(resolve(workspace));
@@ -577,18 +657,23 @@ export class Controller {
     }
     return this.snapshot();
   }
-  async dispatch({ workerId, action, input, intentKey, sessionId }) {
+  async dispatch({
+    workerId,
+    action,
+    input,
+    intentKey,
+    sessionId,
+    modelRoute,
+    callback = false,
+  }) {
     if (intentKey) {
       const existing = this.state.tasks.find(
         (task) => task.intentKey === intentKey,
       );
       if (existing) return existing;
     }
-    validateInput(action, input, this.state.broker.publicTest);
     if (Buffer.byteLength(JSON.stringify(input)) > 24000)
       throw new Error("输入超过 24 KB，请缩小内容");
-    if (this.connection.status !== "connected")
-      throw new Error("消息连接未就绪，请先连接");
     const candidates = this.snapshot().workers.filter(
       (worker) =>
         worker.status === "ready" &&
@@ -603,10 +688,30 @@ export class Controller {
       );
     const worker = candidates.find((worker) => worker.local) ?? candidates[0],
       live = this.live.get(worker.id);
+    input = validateInput(
+      action,
+      input,
+      !worker.local && this.state.broker.publicTest,
+      live.capabilities ?? [],
+    );
+    if (["agent.run", "agent.demo"].includes(action)) {
+      const agent = live.agents?.find((item) => item.id === input.agent);
+      if (!agent?.installed || !agent.enabled)
+        throw new Error("请先安装并启用所选 Agent");
+      input.modelSource =
+        action === "agent.demo"
+          ? "inherit"
+          : (input.modelSource ?? agent.modelSource ?? "inherit");
+      if (input.modelSource === "inherit" && !modelRoute)
+        throw new Error("请先在 DSH 选择模型");
+      input.modelRoute = modelRoute;
+    }
     const task = {
       id: randomUUID(),
       intentKey: intentKey ?? randomUUID(),
       sessionId: sessionId ?? null,
+      modelRoute: modelRoute ?? null,
+      callback,
       workerId: worker.id,
       workerLabel: worker.label,
       bootId: live.bootId,
@@ -616,7 +721,17 @@ export class Controller {
       status: "sent",
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      deadline: Date.now() + 120000,
+      deadline:
+        Date.now() +
+        (action === "agent.install"
+          ? 1230
+          : ["agent.run", "agent.demo"].includes(action)
+            ? (input.timeoutSeconds ?? 600) + 30
+            : action.startsWith("custom.")
+              ? (live.capabilities?.find((item) => item.name === action)
+                  ?.timeoutSeconds ?? 120) + 30
+              : 120) *
+          1000,
     };
     const saved = await this.mutate((state) => {
       const existing = state.tasks.find(
@@ -664,6 +779,7 @@ export class Controller {
   async cancel(id) {
     const task = this.state.tasks.find((item) => item.id === id);
     if (!task) throw new Error("未找到任务");
+    this.modelChannels.get(task.workerId)?.cancelTask(id);
     if (terminal.has(task.status) && task.status !== "unknown") return task;
     await this.mutate((state) => {
       const current = state.tasks.find((item) => item.id === id);
@@ -683,6 +799,30 @@ export class Controller {
   }
   async tick() {
     if (this.closed) return;
+    if (this.onComplete && !this.delivering) {
+      this.delivering = true;
+      try {
+        for (const task of this.state.tasks.filter(
+          (item) =>
+            item.callback &&
+            terminal.has(item.status) &&
+            !item.callbackDelivered,
+        )) {
+          try {
+            if (await this.onComplete(task))
+              await this.mutate((state) => {
+                state.tasks.find(
+                  (item) => item.id === task.id,
+                ).callbackDelivered = true;
+              });
+          } catch {
+            /* Retry delivery when the originating agent is available. */
+          }
+        }
+      } finally {
+        this.delivering = false;
+      }
+    }
     if (
       this.state.tasks.some(
         (task) =>
@@ -712,8 +852,13 @@ export class Controller {
       task.updatedAt = Date.now();
     });
   }
-  async toolRun(args, exec) {
+  async toolRun(args, exec, { delegate = false, modelRoute } = {}) {
     exec.signal?.throwIfAborted();
+    if (
+      ["agent.run", "agent.demo", "agent.install"].includes(args.action) ||
+      args.action.startsWith("custom.")
+    )
+      delegate = true;
     const sessionId =
       exec.agent?.session?.id ??
       exec.agent?.sessionId ??
@@ -739,7 +884,17 @@ export class Controller {
       input: args.input ?? {},
       intentKey,
       sessionId,
+      modelRoute,
+      callback: delegate,
     });
+    if (delegate)
+      return {
+        taskId: task.id,
+        worker: task.workerLabel,
+        status: task.status,
+        callback:
+          "Result will return to this conversation. Use pamiya_task to inspect or cancel.",
+      };
     const cancel = () => {
       void this.cancel(task.id).catch(() => {});
     };
@@ -779,6 +934,7 @@ export class Controller {
           }),
       ),
     );
+    for (const channel of this.modelChannels.values()) channel.close();
     await this.client?.endAsync(true);
     await this.queue;
   }

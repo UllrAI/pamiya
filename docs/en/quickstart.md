@@ -2,13 +2,13 @@
 
 [简体中文](../zh-CN/quickstart.md) · [Ask DSH to install](install-with-dsh.md) · [Full usage guide](dsh-plugin.md)
 
-Pamiya lets DSH work across your computers. Keep using DSH’s conversations, models and account. This computer becomes the first Worker after connecting.
+Pamiya lets DSH work across your computers. Keep using DSH’s conversations, models and account. This computer becomes the first Worker automatically.
 
 ## Before you start
 
 Install and open [DeepSeek Harness](https://www.deepseek.com/harness/). Verified Hosts are Desktop `0.2.0-rc.2` and Web `0.2.1-alpha.4`. **Desktop UI installation needs no Git, source checkout or separate Node.js installation.** Only standalone Workers on other computers require Node.js 22.19 or newer.
 
-The current release is the `v0.1.1` preview on [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.1.1). It is not published to npm; use the complete installation URL below.
+The current release is the `v0.2.0` preview on [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.2.0). It is not published to npm; use the complete installation URL below.
 
 ## 1. Install the plugin
 
@@ -16,7 +16,7 @@ The current release is the `v0.1.1` preview on [GitHub Releases](https://github.
 2. Paste this complete URL into the package/installation field and select **Install**:
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz
 ```
 
 3. Select **Enable now** when installation finishes. If DSH requests a restart, fully quit and reopen it; closing a window may leave the application running.
@@ -24,14 +24,13 @@ https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.
 
 Prefer the Agent to handle this? Give it the [installation task document](install-with-dsh.md).
 
-## 2. Connect this computer
+## 2. Use this computer
 
-1. Open **Pamiya → Connection** and choose **RunMQTT public test connection**.
-2. Select **Load current test parameters → Save and connect**. The plugin reads current credentials from the official page without a separate account signup.
-3. Return to **Workers** and wait for **This computer** to become **Ready**. It joins automatically; do not add it again.
-4. Select **Check connection** and look for **Completed** in **Activity**.
+1. Open **Pamiya → Workers**. This computer joins automatically without configuring MQTT or adding it again.
+2. Wait for **Ready**, select **Check connection**, and view the real result in **Activity**.
+3. Worker details show DSH, Codex, Claude Code and Pi under **Agent capabilities**. Install missing agents, then run a synthetic test.
 
-The public connection supports synthetic echo, wait, text-statistics and connection tests. Use your own private MQTT service for personal files or commands. Trying Pamiya does not require a separate database or control backend.
+The local worker uses a DSH-managed local channel. Share DSH model/authentication by default, or select independent agent settings; see [Agents and custom actions](agent-workers.md).
 
 ## 3. Give your Agent its first task
 
@@ -43,9 +42,9 @@ Expect the local operating system and Node.js version, plus **12 characters, 1 l
 
 ## Choose a computer in a conversation
 
-The **Execution worker** selector above the message box lists this computer and connected workers. No IDs to memorize.
+The **Execution worker** selector in the composer’s bottom toolbar lists this computer and connected workers. No IDs to memorize.
 
-- **Auto · or name a worker**: say “Use Pamiya to check the system on Linux test worker.” Without a named target, prefer this computer, then an available worker supporting the action.
+- **Automatic**: say “Use Pamiya to check the system on Linux test worker.” Without a named target, prefer this computer, then an available worker supporting the action.
 - **Pin a worker**: select the Linux worker, then say “Check the selected computer’s system information.” Each conversation remembers its own selection. Switch to Auto before comparing multiple computers.
 - **Manage workers**: opens configuration to add, rename, pause workers or change this computer’s capabilities.
 
@@ -53,14 +52,16 @@ Changes affect future tasks. Offline, busy or unsupported targets report an erro
 
 **The selector controls only Pamiya tools.** Native DSH bash, file and browser tools still run on the DSH host; the Agent itself has not moved. The public test connection only supports demos and system checks. Selecting Linux does not enable commands such as `ping`: use a private MQTT connection and enable shell execution on that Worker first.
 
-![Select a Linux worker in a conversation and receive its real results (Chinese UI)](../../packages/dsh-plugin/design/conversation-worker.zh-CN.png)
+![Select a Linux worker in a conversation and receive its real results (Chinese UI)](../../packages/dsh-plugin/design/worker-picker.zh-CN.png)
 
 ## 4. Optional: connect another computer
 
-1. Choose **Add worker → Another computer or server**, name it and create pairing.
+1. First open **Connection → RunMQTT public test connection → Load current test parameters → Save and connect**. Then choose **Add worker → Another computer or server**, name it and create pairing.
 2. Install [Node.js 22.19 or newer](https://nodejs.org/en/download) on that computer and put the downloaded Worker in its Downloads folder.
 3. Choose its operating system in Pamiya, copy the start command and run it in the terminal **on that other computer**. If clipboard access fails, select **Show command for manual copy**.
 4. Wait for the second Worker to become **Ready**, then select **Try multiple workers**.
+
+Public connections support fixed synthetic agent tests, echo, wait, text statistics and system checks. Use a private connection for real remote jobs. Local capabilities are independent of public MQTT settings.
 
 Do not install another Worker for this computer. Pair each remote computer separately and share its code only with that computer. Closing the terminal or sleeping the computer can take it offline. Long-running servers can use a process manager as described in the [usage guide](dsh-plugin.md).
 

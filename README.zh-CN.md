@@ -4,7 +4,7 @@
 
 Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提供上下文，让它自主推进，再一起完善可使用的成果。底层通过逻辑集中的 Control Plane、持久化 State Plane 和异构 Execution Network，协调云端、桌面、企业内网与设备上的工作。
 
-**DSH 插件 0.1 · 产品交互原型 0.2 · 架构基线 0.1。** 插件使用真实 MQTT 与 Worker；独立原型仍是模拟，分布式平台的扩展提案不等于已实现。
+**DSH 插件 0.2 · 产品交互原型 0.2 · 架构基线 0.1。** 插件使用真实 MQTT 与 Worker；独立原型仍是模拟，分布式平台的扩展提案不等于已实现。
 
 ## 安装到 DSH
 
@@ -13,10 +13,10 @@ Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提
 在 DSH 中打开 **插件 → 添加插件**，粘贴以下地址，安装并启用：
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz
 ```
 
-预构建桌面插件不需要 Git、源码或额外安装 Node.js。打开 **Pamiya → 连接设置** 填入测试连接，本机会自动加入。[完整使用与实现说明](docs/zh-CN/dsh-plugin.md)。
+预构建桌面插件不需要 Git、源码或额外安装 Node.js。打开 **Pamiya**，本机通过本地通道自动加入；远端接入时再配置 MQTT。[完整使用与实现说明](docs/zh-CN/dsh-plugin.md)。
 
 <details>
 <summary>从源码构建安装</summary>
@@ -28,7 +28,7 @@ npm ci
 node scripts/install-dsh-plugin.mjs --demo
 ```
 
-`--demo` 显式启用首次 RunMQTT 公共测试配置并检查本机节点；个人文件和命令使用自有私有连接。
+`--demo` 显式启用首次 RunMQTT 公共测试配置并检查本机节点；本机不依赖 MQTT，远端个人文件和命令使用自有私有连接。
 
 </details>
 
@@ -97,3 +97,5 @@ Always-on 职责通过持久化事件、简单规则和按需激活实现，无�
 [贡献说明](CONTRIBUTING.md) 提供双语维护、检查和架构图渲染方法。[视觉资产说明](assets/brand/README.md) 记录 banner、分享图、配色与生成提示词；[架构图源码](assets/diagrams/README.md) 保持可编辑。
 
 采用 [Apache-2.0](LICENSE) 许可。
+
+[Agent、模型复用与自定义动作](docs/zh-CN/agent-workers.md)。

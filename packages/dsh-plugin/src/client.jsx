@@ -1,13 +1,83 @@
 import React, { useState, useEffect, useRef } from "react";
+import {
+  Menu,
+  Tooltip,
+  IconFollowsystemOutlineRegular,
+  IconChevronDownOutlineRegular,
+  IconSparkleRegular,
+  IconSettingsOutlineRegular,
+} from "@deepseek-ai/dsh-client-ui-primitives";
 import styles from "./client.css";
 
 const copy = {
+  actionAgentDemo: ["Agent 合成验证", "Agent synthetic test"],
+  actionAgentRun: ["Agent 任务", "Agent task"],
+  actionAgentInstall: ["安装 Agent", "Install agent"],
+  actionInspect: ["读取节点能力", "Read worker capabilities"],
+  actionConfigure: ["更新节点能力", "Update worker capabilities"],
+  actionArtifact: ["读取任务产物", "Read task artifact"],
+  ownModel: [
+    "模型（可选，留空使用 Agent 默认值）",
+    "Model (optional; uses the agent default)",
+  ],
+  ownProvider: ["提供商（Pi，可选）", "Provider (Pi, optional)"],
+  syntheticModelHint: [
+    "合成验证始终使用 DSH 共享模型，不读取该 Agent 的个人登录信息。",
+    "Synthetic tests always use the shared DSH model, without reading the agent’s personal login.",
+  ],
+  agentTitle: ["Agent 能力", "Agent capabilities"],
+  agentHint: [
+    "默认复用 DSH 模型与鉴权，也可使用节点自己的配置。Skills 暂不同步。",
+    "Share DSH model/authentication or use this worker’s own settings. Skills are not synced yet.",
+  ],
+  inheritModel: ["复用 DSH（默认）", "Share DSH (default)"],
+  independentModel: ["独立配置", "Independent settings"],
+  installAgent: ["安装", "Install"],
+  testAgent: ["合成验证", "Synthetic test"],
+  installedAgent: ["已检测到", "Detected"],
+  absentAgent: ["尚未安装", "Not installed"],
+  saveAgents: ["保存 Agent 设置", "Save agent settings"],
+  customTitle: ["自定义动作", "Custom actions"],
+  customHint: [
+    "动作通过标准输入接收 JSON 参数，并从标准输出返回结果。命令以这台电脑的用户身份执行；不会把参数拼接到 shell。",
+    "Actions receive JSON on stdin and return stdout. Commands run as this computer’s user; inputs are never interpolated into a shell.",
+  ],
+  advancedActions: ["编辑动作定义（JSON）", "Edit action definitions (JSON)"],
+  saveActions: ["保存动作", "Save actions"],
+  loadingAgents: [
+    "正在读取这台电脑的能力…",
+    "Reading this computer’s capabilities…",
+  ],
+  agentQueued: [
+    "任务已提交，请在运行记录查看进度与结果。",
+    "Task submitted. View progress and results in Activity.",
+  ],
+  localReady: ["本机已自动连接", "This computer connects automatically"],
+  localFirstHint: [
+    "先完成一个本机任务，再按需接入其他电脑。无需先配置消息服务。",
+    "Start with a local task, then connect other computers when needed. No message service setup is needed for this computer.",
+  ],
+  localFirstTest: ["验证本机连接", "Check this computer"],
+  remoteLater: ["接入另一台电脑", "Connect another computer"],
+  progressTitle: ["最新进展", "Latest progress"],
+
   executionTarget: ["执行节点", "Execution worker"],
-  automatic: ["自动 · 可按名称指定", "Auto · or name a worker"],
-  targetScope: ["仅 Pamiya 工具", "Pamiya tools only"],
+  automatic: ["自动选择", "Automatic"],
+  automaticHint: [
+    "优先本机，也可在消息中指定节点",
+    "Prefer this computer, or name a worker",
+  ],
+  targetScope: [
+    "仅影响 Pamiya 工具，DSH 自带工具仍在本机。",
+    "Applies to Pamiya tools. Native DSH tools stay local.",
+  ],
   targetHint: [
-    "记住本对话的选择。自动时优先这台电脑，也可在消息中指定节点名。切换只影响后续任务。DSH 自带工具仍在本机运行。",
-    "Remembered for this conversation. Auto prefers this computer; you can also name a worker in your message. Changes affect future tasks. Native DSH tools still run on this computer.",
+    "选择此对话使用的执行节点",
+    "Choose this conversation’s execution worker",
+  ],
+  targetEmpty: [
+    "还没有节点，请先添加或连接",
+    "No workers yet. Add or connect one to begin.",
   ],
   manageWorkers: ["管理节点", "Manage workers"],
   removedTarget: ["所选节点已移除", "Selected worker removed"],
@@ -274,6 +344,12 @@ const dictionaries = Object.fromEntries(
   ]),
 );
 const actions = {
+  "agent.demo": "actionAgentDemo",
+  "agent.run": "actionAgentRun",
+  "agent.install": "actionAgentInstall",
+  "agent.artifact": "actionArtifact",
+  "worker.inspect": "actionInspect",
+  "worker.configure": "actionConfigure",
   "system.check": "actionCheck",
   "demo.echo": "actionEcho",
   "demo.wait": "actionWait",
@@ -669,6 +745,130 @@ function AddWorker({
     </Modal>
   );
 }
+function AgentSettings({ worker, rpc, act, t, publicTest }) {
+  const [settings, setSettings] = useState(null),
+    [error, setError] = useState(""),
+    [actionsJson, setActionsJson] = useState("[]");
+  useEffect(() => {
+    let cancelled = false;
+    rpc("capabilities", { id: worker.id })
+      .then((value) => {
+        if (cancelled) return;
+        setSettings(value.capabilities);
+        setActionsJson(
+          JSON.stringify(value.capabilities.actions ?? [], null, 2),
+        );
+      })
+      .catch((error) => {
+        if (!cancelled) setError(error.message);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [worker.id]);
+  const save = (custom = false) =>
+    act(async () => {
+      const value = {
+        ...settings,
+        ...(custom ? { actions: JSON.parse(actionsJson) } : {}),
+      };
+      await rpc("capabilities", { id: worker.id, capabilities: value });
+      setSettings(value);
+    });
+  return (
+    <section className="pm-agent-settings">
+      <h3>{t("agentTitle")}</h3>
+      <p className="pm-note">{t("agentHint")}</p>
+      {error && (
+        <p role="alert" className="pm-error">
+          {error}
+        </p>
+      )}
+      {!settings && !error && <p>{t("loadingAgents")}</p>}
+      {(worker.agents ?? []).map((agent) => (
+        <div className="pm-agent-row" key={agent.id}>
+          <div>
+            <strong>{agent.name}</strong>
+            <small>
+              {t(agent.installed ? "installedAgent" : "absentAgent")}
+            </small>
+          </div>
+          <select
+            aria-label={`${agent.name} ${t("inheritModel")}`}
+            disabled={!settings}
+            value={settings?.agents?.[agent.id]?.modelSource ?? "inherit"}
+            onChange={(event) =>
+              setSettings({
+                ...settings,
+                agents: {
+                  ...settings.agents,
+                  [agent.id]: {
+                    ...settings.agents?.[agent.id],
+                    enabled: true,
+                    modelSource: event.target.value,
+                  },
+                },
+              })
+            }
+          >
+            <option value="inherit">{t("inheritModel")}</option>
+            <option value="independent">{t("independentModel")}</option>
+          </select>
+          {settings?.agents?.[agent.id]?.modelSource === "independent" &&
+            (!publicTest || worker.local) && (
+              <input
+                aria-label={`${agent.name} ${t("ownModel")}`}
+                placeholder={t("ownModel")}
+                value={settings.agents[agent.id].model ?? ""}
+                onChange={(event) =>
+                  setSettings({
+                    ...settings,
+                    agents: {
+                      ...settings.agents,
+                      [agent.id]: {
+                        ...settings.agents[agent.id],
+                        model: event.target.value,
+                      },
+                    },
+                  })
+                }
+              />
+            )}
+          <Button
+            disabled={worker.status !== "ready"}
+            onClick={() =>
+              act(() =>
+                rpc("dispatch", {
+                  workerId: worker.id,
+                  action: agent.installed ? "agent.demo" : "agent.install",
+                  input: { agent: agent.id },
+                }),
+              )
+            }
+          >
+            {t(agent.installed ? "testAgent" : "installAgent")}
+          </Button>
+        </div>
+      ))}
+      {settings && <Button onClick={() => save()}>{t("saveAgents")}</Button>}
+      {settings && (!publicTest || worker.local) && (
+        <details>
+          <summary>{t("advancedActions")}</summary>
+          <p className="pm-note">{t("customHint")}</p>
+          <textarea
+            className="pm-json-editor"
+            aria-label={t("customTitle")}
+            value={actionsJson}
+            onChange={(event) => setActionsJson(event.target.value)}
+            spellCheck={false}
+          />
+          <Button onClick={() => save(true)}>{t("saveActions")}</Button>
+        </details>
+      )}
+      <p className="pm-note">{t("syntheticModelHint")}</p>
+    </section>
+  );
+}
 function WorkerDetail({ worker, rpc, act, t, onClose, onReissue, publicTest }) {
   const [workspace, setWorkspace] = useState(worker.workspace ?? ""),
     [allowShell, setAllowShell] = useState(Boolean(worker.allowShell)),
@@ -701,9 +901,15 @@ function WorkerDetail({ worker, rpc, act, t, onClose, onReissue, publicTest }) {
       </Button>
       <h3>{t("capabilities")}</h3>
       <div className="pm-tags">
-        {(worker.actions ?? []).map((action) => (
-          <span key={action}>{t(actions[action] ?? action)}</span>
-        ))}
+        {(worker.actions ?? [])
+          .filter(
+            (action) =>
+              !action.startsWith("worker.") &&
+              !["agent.install", "agent.artifact"].includes(action),
+          )
+          .map((action) => (
+            <span key={action}>{t(actions[action] ?? action)}</span>
+          ))}
       </div>
       <p className="pm-note">
         {worker.local ? t("localStopHint") : t("remoteHint")}
@@ -724,7 +930,7 @@ function WorkerDetail({ worker, rpc, act, t, onClose, onReissue, publicTest }) {
           <Button onClick={onReissue}>{t("updatePairing")}</Button>
         )}
       </div>
-      {worker.local && !publicTest && (
+      {worker.local && (
         <section>
           <h3>{t("localAccess")}</h3>
           <Field label={t("localWorkspace")}>
@@ -754,6 +960,13 @@ function WorkerDetail({ worker, rpc, act, t, onClose, onReissue, publicTest }) {
           </Button>
         </section>
       )}
+      <AgentSettings
+        worker={worker}
+        rpc={rpc}
+        act={act}
+        t={t}
+        publicTest={publicTest}
+      />
       <details>
         <summary>{t("details")}</summary>
         <code>{worker.id}</code>
@@ -775,7 +988,8 @@ function WorkerDetail({ worker, rpc, act, t, onClose, onReissue, publicTest }) {
   );
 }
 function TaskDetail({ task, rpc, act, t, onClose }) {
-  const [note, setNote] = useState(""),
+  const [continuation, setContinuation] = useState(""),
+    [note, setNote] = useState(""),
     [verified, setVerified] = useState("failed"),
     [review, setReview] = useState(false);
   return (
@@ -794,9 +1008,56 @@ function TaskDetail({ task, rpc, act, t, onClose }) {
       {task.error && task.status !== "cancelled" && (
         <p className="pm-error">{task.error}</p>
       )}
+      {task.progress && (
+        <>
+          <h3>{t("progressTitle")}</h3>
+          <p>{task.progress.phase}</p>
+          {task.progress.text && <pre>{task.progress.text}</pre>}
+        </>
+      )}
       <h3>{t("input")}</h3>
       <pre>{JSON.stringify(task.input, null, 2)}</pre>
       <h3>{t("result")}</h3>
+      {task.result?.answer && (
+        <p className="pm-agent-answer">{task.result.answer}</p>
+      )}
+      {task.result?.sessionRef && (
+        <details>
+          <summary>
+            {t("agentTitle")} · {task.result.agent}
+          </summary>
+          <p className="pm-note">Session: {task.result.sessionRef}</p>
+          {task.action === "agent.run" && (
+            <textarea
+              aria-label={t("input")}
+              value={continuation}
+              onChange={(event) => setContinuation(event.target.value)}
+            />
+          )}
+          <Button
+            disabled={task.action === "agent.run" && !continuation.trim()}
+            onClick={() =>
+              act(async () => {
+                await rpc("dispatch", {
+                  workerId: task.workerId,
+                  action: task.action,
+                  input: {
+                    agent: task.result.agent,
+                    sessionRef: task.result.sessionRef,
+                    modelSource: task.result.modelSource,
+                    ...(task.action === "agent.run"
+                      ? { prompt: continuation }
+                      : {}),
+                  },
+                });
+                onClose();
+              })
+            }
+          >
+            {t(task.action === "agent.demo" ? "testAgent" : "retry")}
+          </Button>
+        </details>
+      )}
       <pre>
         {task.result === undefined || task.result === null
           ? t("noContent")
@@ -823,7 +1084,9 @@ function TaskDetail({ task, rpc, act, t, onClose }) {
           <Button onClick={() => setReview(!review)}>{t("resolve")}</Button>
         )}
         {["succeeded", "failed", "cancelled"].includes(task.status) &&
-          !["fs.write", "shell.run"].includes(task.action) && (
+          !["fs.write", "shell.run"].includes(task.action) &&
+          !task.action.startsWith("agent.") &&
+          !task.action.startsWith("custom.") && (
             <Button
               onClick={() =>
                 act(async () => {
@@ -1074,7 +1337,15 @@ function Panel({ ctx, t }) {
           <p>{t("subtitle")}</p>
         </div>
         <Badge
-          status={loadError ? "reconnecting" : snapshot.connection.status}
+          status={
+            loadError
+              ? "reconnecting"
+              : workers.some((worker) =>
+                    ["ready", "busy"].includes(worker.status),
+                  )
+                ? "connected"
+                : snapshot.connection.status
+          }
           t={t}
         />
       </header>
@@ -1122,39 +1393,32 @@ function Panel({ ctx, t }) {
         <div hidden={tab !== "workers"}>
           {onboarding && (
             <div className="pm-onboarding">
-              <h2>{t("setupTitle")}</h2>
-              <p>{t("setupHint")}</p>
-              <ol>
-                <li
-                  className={
-                    snapshot.connection.status === "connected" ? "done" : ""
+              <h2>{t("localReady")}</h2>
+              <p>{t("localFirstHint")}</p>
+              <div className="pm-row">
+                <Button
+                  primary
+                  disabled={
+                    !workers.some(
+                      (worker) => worker.local && worker.status === "ready",
+                    )
+                  }
+                  onClick={() =>
+                    act(() =>
+                      rpc("dispatch", {
+                        workerId: workers.find((worker) => worker.local)?.id,
+                        action: "system.check",
+                        input: {},
+                      }),
+                    )
                   }
                 >
-                  <button onClick={() => setTab("connection")}>
-                    {t("step1")}
-                  </button>
-                </li>
-                <li
-                  className={
-                    workers.some((worker) => worker.paired) ? "done" : ""
-                  }
-                >
-                  <button
-                    disabled={snapshot.connection.status !== "connected"}
-                    onClick={() => setDialog({ type: "add" })}
-                  >
-                    {t("step2")}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    disabled={!available.length}
-                    onClick={() => setDialog({ type: "try" })}
-                  >
-                    {t("step3")}
-                  </button>
-                </li>
-              </ol>
+                  {t("localFirstTest")}
+                </Button>
+                <Button onClick={() => setTab("connection")}>
+                  {t("remoteLater")}
+                </Button>
+              </div>
             </div>
           )}
           <div className="pm-section-heading">
@@ -1173,8 +1437,11 @@ function Panel({ ctx, t }) {
               </Button>
               <Button
                 primary
-                disabled={snapshot.connection.status !== "connected"}
-                onClick={() => setDialog({ type: "add" })}
+                onClick={() =>
+                  snapshot.connection.status === "connected"
+                    ? setDialog({ type: "add" })
+                    : setTab("connection")
+                }
               >
                 + {t("add")}
               </Button>
@@ -1238,9 +1505,18 @@ function Panel({ ctx, t }) {
                         : (worker.platform ?? t("remote"))}
                     </p>
                     <div className="pm-tags">
-                      {(worker.actions ?? []).slice(0, 4).map((action) => (
-                        <span key={action}>{t(actions[action] ?? action)}</span>
-                      ))}
+                      {(worker.agents?.some((agent) => agent.installed)
+                        ? worker.agents
+                            .filter((agent) => agent.installed)
+                            .map((agent) => agent.name)
+                        : (worker.actions ?? [])
+                      )
+                        .slice(0, 4)
+                        .map((action) => (
+                          <span key={action}>
+                            {t(actions[action] ?? action)}
+                          </span>
+                        ))}
                     </div>
                     <footer>
                       <small>
@@ -1419,7 +1695,8 @@ function Panel({ ctx, t }) {
 function ConversationTarget({ ctx, sessionId, t }) {
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
-    [saving, setSaving] = useState(false);
+    [saving, setSaving] = useState(false),
+    [open, setOpen] = useState(false);
   const changing = useRef(false),
     revision = useRef(0);
   useEffect(() => {
@@ -1447,6 +1724,7 @@ function ConversationTarget({ ctx, sessionId, t }) {
       }
     };
     setData(null);
+    setOpen(false);
     void refresh();
     const timer = setInterval(refresh, 3000);
     return () => {
@@ -1454,8 +1732,13 @@ function ConversationTarget({ ctx, sessionId, t }) {
       clearInterval(timer);
     };
   }, [ctx, sessionId, t]);
-  const select = async (event) => {
-    const workerId = event.target.value || null;
+  const select = async (id) => {
+    if (id === "manage") {
+      setOpen(false);
+      ctx.layout.selectPanel("pamiya");
+      return;
+    }
+    const workerId = id === "auto" ? null : id;
     revision.current++;
     changing.current = true;
     setSaving(true);
@@ -1468,6 +1751,7 @@ function ConversationTarget({ ctx, sessionId, t }) {
       if (!result.ok) throw new Error(result.error.message);
       setData(result.value);
       setError("");
+      setOpen(false);
     } catch (failure) {
       setError(failure.message);
     } finally {
@@ -1475,38 +1759,109 @@ function ConversationTarget({ ctx, sessionId, t }) {
       setSaving(false);
     }
   };
-  return (
-    <div className="pamiya-target" title={t("targetHint")}>
-      <label>
-        <span>{t("executionTarget")}</span>
-        <select
-          aria-label={t("executionTarget")}
-          value={data?.workerId ?? ""}
-          disabled={!data || saving}
-          onChange={select}
-        >
-          <option value="">{t("automatic")}</option>
-          {data?.workerId &&
-            !data.workers.some((worker) => worker.id === data.workerId) && (
-              <option value={data.workerId}>{t("removedTarget")}</option>
-            )}
-          {data?.workers.map((worker) => (
-            <option key={worker.id} value={worker.id}>
-              {worker.label} · {t(worker.status)}
-            </option>
-          ))}
-        </select>
-      </label>
-      <span className="pamiya-target-scope">{t("targetScope")}</span>
-      <button type="button" onClick={() => ctx.layout.selectPanel("pamiya")}>
-        {t("manageWorkers")}
-      </button>
-      {error && (
-        <span role="alert" className="pamiya-target-error">
-          {error}
+  const selected = data?.workers.find((worker) => worker.id === data.workerId);
+  const label =
+    selected?.label ??
+    (data?.workerId ? t("removedTarget") : t("executionTarget"));
+  const status = selected?.status ?? (data?.workerId ? "revoked" : null);
+  const unavailable = error || (status && !["ready", "busy"].includes(status));
+  const items = [
+    { type: "label", id: "heading", text: t("executionTarget") },
+    {
+      id: "auto",
+      icon: <IconSparkleRegular />,
+      label: (
+        <span className="pm-target-option">
+          <span>{t("automatic")}</span>
+          <small>{t("automaticHint")}</small>
         </span>
-      )}
-    </div>
+      ),
+      disabled: !data || saving,
+    },
+    ...(data?.workers ?? []).map((worker) => ({
+      id: worker.id,
+      icon: (
+        <span
+          className="pm-target-led"
+          data-status={worker.status}
+          role="img"
+          aria-label={t(worker.status)}
+          title={t(worker.status)}
+        />
+      ),
+      label: (
+        <span className="pm-target-option">
+          <span className="pm-target-option-line">
+            <span className="pm-target-name">{worker.label}</span>
+          </span>
+          <small>
+            {{ darwin: "macOS", win32: "Windows", linux: "Linux" }[
+              worker.platform
+            ] ||
+              worker.platform ||
+              t(worker.local ? "local" : "remote")}
+          </small>
+        </span>
+      ),
+      disabled: saving,
+    })),
+    ...(data?.workerId && !selected
+      ? [{ id: data.workerId, label: t("removedTarget"), disabled: true }]
+      : []),
+    ...(data && !data.workers.length
+      ? [{ type: "label", id: "empty", text: t("targetEmpty") }]
+      : []),
+    ...(error ? [{ type: "label", id: "error", text: error }] : []),
+  ];
+  return (
+    <Menu
+      open={open}
+      onClose={() => setOpen(false)}
+      onSelect={select}
+      items={items}
+      selectedId={data?.workerId ?? "auto"}
+      side="top"
+      portal
+      autoFocus
+      listClassName="pm-target-menu"
+      footer={[
+        {
+          id: "manage",
+          label: t("manageWorkers"),
+          icon: <IconSettingsOutlineRegular />,
+        },
+        { type: "label", id: "scope", text: t("targetScope") },
+      ]}
+      anchor={
+        <Tooltip
+          label={
+            error || `${t("targetHint")}${status ? ` · ${t(status)}` : ""}`
+          }
+          side="top"
+          delayMs={500}
+          disabled={open}
+        >
+          <button
+            type="button"
+            className="pm-target-trigger"
+            data-unavailable={unavailable ? "true" : undefined}
+            aria-label={`${t("executionTarget")}：${data?.workerId ? label : t("automatic")}${status ? ` · ${t(status)}` : ""}`}
+            aria-haspopup="menu"
+            aria-expanded={open}
+            aria-busy={saving || undefined}
+            disabled={saving}
+            onClick={() => setOpen(!open)}
+          >
+            <IconFollowsystemOutlineRegular size={14} />
+            <span className="pm-target-trigger-label">{label}</span>
+            <IconChevronDownOutlineRegular
+              className="pm-target-chevron"
+              size={12}
+            />
+          </button>
+        </Tooltip>
+      }
+    />
   );
 }
 export const inject = ["slots", "locale", "connection", "layout"];
@@ -1543,10 +1898,10 @@ export function apply(ctx) {
       Icon,
     ),
   );
-  ctx.slots.inject("conversation.input.dock", () =>
+  ctx.slots.inject("conversation.input.left", () =>
     ctx.slots.register(
       {
-        name: "conversation.input.dock",
+        name: "conversation.input.left",
         id: "pamiya-target",
         order: 10,
         locale: "pamiya",

@@ -4,7 +4,7 @@
 
 Pamiya is a **personal Agent for ongoing work**: express a goal, provide context, let it advance the work, and refine a useful result together. Its architecture connects cloud services, desktops, enterprise networks, and devices through a logically centralized Control Plane, durable State Plane, and heterogeneous Execution Network.
 
-**DSH plugin 0.1 · Interaction prototype 0.2 · Architecture baseline 0.1.** The plugin uses real MQTT and Workers. The standalone prototype remains a simulation, and platform extension proposals are distinct from implemented capabilities.
+**DSH plugin 0.2 · Interaction prototype 0.2 · Architecture baseline 0.1.** The plugin uses real MQTT and Workers. The standalone prototype remains a simulation, and platform extension proposals are distinct from implemented capabilities.
 
 ## Install into DSH
 
@@ -13,10 +13,10 @@ Pamiya is a **personal Agent for ongoing work**: express a goal, provide context
 Open **Plugins → Add plugin** in DSH, paste this URL, install and enable:
 
 ```text
-https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz
+https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz
 ```
 
-The prebuilt Desktop plugin needs no Git, source checkout or separate Node.js. Open **Pamiya → Connection** to set up the test connection; this computer joins automatically. [Full usage and implementation guide](docs/en/dsh-plugin.md).
+The prebuilt Desktop plugin needs no Git, source checkout or separate Node.js. Open **Pamiya**; this computer joins through the local channel without MQTT. Configure MQTT when adding remote computers. [Full usage and implementation guide](docs/en/dsh-plugin.md).
 
 <details>
 <summary>Build and install from source</summary>
@@ -28,7 +28,7 @@ npm ci
 node scripts/install-dsh-plugin.mjs --demo
 ```
 
-`--demo` explicitly enables first-time public RunMQTT setup and a local connection check. Use a private broker for personal files and commands.
+`--demo` explicitly enables first-time public RunMQTT setup and a local connection check. Local tasks need no broker; use a private connection for real remote files and commands.
 
 </details>
 
@@ -97,3 +97,5 @@ Always-on responsibilities use durable events, simple rules, and on-demand activ
 [Contributing](CONTRIBUTING.md) explains bilingual updates, local checks, and diagram rendering. [Visual assets](assets/brand/README.md) records the banner, social preview, palette, and generation prompt; [diagram sources](assets/diagrams/README.md) remain editable.
 
 Released under [Apache-2.0](LICENSE).
+
+[Agents, model sharing and custom actions](docs/en/agent-workers.md).

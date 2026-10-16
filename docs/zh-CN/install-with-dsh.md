@@ -10,9 +10,9 @@
 
 ## 安装目标
 
-- 插件包：`@pamiya/dsh-plugin`，版本 `0.1.1`。
-- 发布页：https://github.com/UllrAI/pamiya/releases/tag/v0.1.1
-- 安装 spec：`https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz`
+- 插件包：`@pamiya/dsh-plugin`，版本 `0.2.0`。
+- 发布页：https://github.com/UllrAI/pamiya/releases/tag/v0.2.0
+- 安装 spec：`https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz`
 - 已验证宿主：DSH `0.2.0-rc.2`、`0.2.1-alpha.4`。其他版本以宿主的兼容性检查结果为准。
 - 保留已有模型、对话、工作区、其他插件和连接配置。安装此预构建包不需要克隆仓库、构建源码或发布 npm 包。
 
@@ -24,7 +24,7 @@
 ```json
 {
   "action": "install_bundle",
-  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.1.1/pamiya-dsh-plugin-0.1.1.tgz",
+  "target": "https://github.com/UllrAI/pamiya/releases/download/v0.2.0/pamiya-dsh-plugin-0.2.0.tgz",
   "enabled": true
 }
 ```
@@ -33,7 +33,7 @@
 
 3. 根据真实返回处理：`applied` 后继续检查；`restart-required` 时告诉用户完全退出并重新打开 DSH，然后继续验收。不要把“下载完成”或“等待重启”描述成可用。
 4. 再次 `list_bundles` 确认包已安装并启用。若工具目录已刷新，调用 `pamiya_workers`；尚未加载时先完成重启。
-5. 首次没有配置 MQTT 是正常状态。引导用户打开 **Pamiya → 连接设置 → RunMQTT 公共测试连接 → 填入当前测试参数 → 保存并连接**。本机会自动加入，不另建本机节点。
+5. 首次没有配置 MQTT 是正常状态。本机通过本地通道自动加入，不需要先连接公共服务或重复添加。远端接入才需要 **Pamiya → 连接设置**。
 6. 当 `pamiya_workers` 返回至少一个可用节点时，用其真实 ID 调用 `pamiya_execute`：`action="system.check"`、`input={}`。需要时再执行 `text.stats`，输入 `{"text":"Hello Pamiya"}`；预期为 12 字符、1 行、2 词。以工具实际结果判断成功。
 7. 告诉用户实际安装版本、已完成到哪一步、本机节点是否可用，以及下一步如何添加其他电脑。只能在真实执行成功后报告“已安装并验证”。
 

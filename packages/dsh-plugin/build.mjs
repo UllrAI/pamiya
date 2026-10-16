@@ -40,7 +40,7 @@ const client = await build({
   platform: "browser",
   format: "cjs",
   target: "es2022",
-  external: ["react"],
+  external: ["react", "@deepseek-ai/dsh-client-ui-primitives"],
   loader: { ".css": "text" },
   logLevel: "warning",
 });

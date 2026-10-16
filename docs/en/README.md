@@ -39,3 +39,5 @@ Official links support third-party capability statements. The Dot/Codex example 
 [DSH plugin installation and usage](dsh-plugin.md).
 
 [User quickstart and installation](quickstart.md) · [Installation task for DSH](install-with-dsh.md).
+
+[Agents, model sharing and custom actions](agent-workers.md).

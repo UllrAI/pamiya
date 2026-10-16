@@ -1,4 +1,12 @@
 import mqtt from "mqtt";
+import {
+  readCapabilities,
+  parseCapabilities,
+  discoverAgents,
+  runProcess,
+} from "./capabilities.js";
+import { runAgent } from "./agent-runtime.js";
+import { ModelChannel } from "./model-channel.js";
 import { randomUUID } from "node:crypto";
 import {
   mkdir,
@@ -179,7 +187,7 @@ export async function executeAction(
 
 export async function startWorker(
   configuration,
-  { directory, onState = () => {} } = {},
+  { directory, onState = () => {}, transport } = {},
 ) {
   const config = {
     ...configuration,
@@ -204,17 +212,31 @@ export async function startWorker(
   };
   const active = new Map(),
     jobs = new Set();
-  const client = mqtt.connect(
-    options(
-      config.broker,
-      `pamiya-worker-${config.workerId}-${bootId.slice(0, 8)}`,
-    ),
-  );
-  const actions = config.broker.publicTest
-    ? demoActions
-    : privateActions.filter(
-        (action) => action !== "shell.run" || config.allowShell,
-      );
+  const publicTest = !transport && config.broker.publicTest;
+  let capabilities = await readCapabilities(directory);
+  let agents = await discoverAgents(capabilities, directory);
+  let actions;
+  const refreshCapabilities = async () => {
+    capabilities = await readCapabilities(directory);
+    agents = await discoverAgents(capabilities, directory);
+    actions = publicTest
+      ? demoActions
+      : [
+          ...privateActions.filter(
+            (action) => action !== "shell.run" || config.allowShell,
+          ),
+          ...capabilities.actions.map((action) => action.name),
+        ];
+  };
+  await refreshCapabilities();
+  const client =
+    transport?.() ??
+    mqtt.connect(
+      options(
+        config.broker,
+        `pamiya-worker-${config.workerId}-${bootId.slice(0, 8)}`,
+      ),
+    );
   const publish = async (kind, payload, taskId) => {
     if (client.connected)
       await client.publishAsync(
@@ -229,11 +251,25 @@ export async function startWorker(
         { qos: 1, retain: false },
       );
   };
+  const models = new ModelChannel({
+    send: (frame, id) => publish("model", frame, id),
+  });
   const status = () =>
     publish("status", {
       label: config.label,
       platform: process.platform,
       actions,
+      capabilities: publicTest
+        ? []
+        : capabilities.actions.map(
+            ({ name, description, inputSchema, timeoutSeconds }) => ({
+              name,
+              description,
+              inputSchema,
+              timeoutSeconds,
+            }),
+          ),
+      agents: agents.map(({ command, ...agent }) => agent),
       capacity: 1,
       active: active.size,
     });
@@ -271,7 +307,12 @@ export async function startWorker(
     let validated;
     try {
       if (!actions.includes(action)) throw new Error("节点未开放这项能力");
-      validated = validateInput(action, input, config.broker.publicTest);
+      validated = validateInput(
+        action,
+        input,
+        publicTest,
+        capabilities.actions,
+      );
     } catch (error) {
       await publish(
         "result",
@@ -295,11 +336,137 @@ export async function startWorker(
       await save();
       await publish("accepted", {}, id);
       await status();
-      const result = await executeAction(action, validated, {
-        signal: abort.signal,
-        workspace: config.workspace,
-        allowShell: config.allowShell,
-      });
+      let result;
+      if (action === "worker.inspect") {
+        await refreshCapabilities();
+        result = {
+          capabilities: publicTest
+            ? {
+                version: 1,
+                actions: [],
+                agents: Object.fromEntries(
+                  agents.map((agent) => [
+                    agent.id,
+                    { enabled: agent.enabled, modelSource: agent.modelSource },
+                  ]),
+                ),
+              }
+            : capabilities,
+          agents: agents.map(({ command, ...agent }) => agent),
+        };
+      } else if (action === "worker.configure") {
+        capabilities = parseCapabilities(validated.capabilities);
+        await atomicJson(resolve(directory, "capabilities.json"), capabilities);
+        await refreshCapabilities();
+        result = { configured: true };
+      } else if (action === "agent.install") {
+        const packages = {
+          dsh: "@deepseek-ai/dsh@0.2.0-rc.2",
+          codex: "@openai/codex@0.162.1",
+          claude: "@anthropic-ai/claude-code@2.1.296",
+          pi: "@earendil-works/pi-coding-agent@1.3.0",
+        };
+        const { executable } = await import("./capabilities.js");
+        const npm = await executable("npm", directory);
+        if (!npm) throw new Error("未找到 npm，请先安装 Node.js LTS");
+        const prefix = resolve(directory, "agents");
+        const installed = await runProcess(
+          npm,
+          [
+            "install",
+            "--prefix",
+            prefix,
+            packages[validated.agent],
+            "--no-fund",
+            "--no-audit",
+          ],
+          {
+            signal: abort.signal,
+            timeoutSeconds: 1200,
+            env: {
+              PATH: `${dirname(process.execPath)}${process.platform === "win32" ? ";" : ":"}${process.env.PATH ?? ""}`,
+            },
+          },
+        );
+        if (installed.exitCode !== 0)
+          throw new Error(installed.stderr || "安装失败，请检查网络与 npm");
+        await refreshCapabilities();
+        result = {
+          installed:
+            agents.find((agent) => agent.id === validated.agent)?.installed ??
+            false,
+        };
+      } else if (action === "agent.artifact") {
+        const source = journal[validated.taskId];
+        if (publicTest && source?.action !== "agent.demo")
+          throw new Error("公共连接只读取合成任务产物");
+        const artifact = source?.result?.artifacts?.find(
+          (item) => item.name === validated.name,
+        );
+        if (!artifact) throw new Error("未找到这个任务的产物");
+        const path =
+          artifact.kind === "log"
+            ? await safePath(directory, artifact.path)
+            : await safePath(config.workspace, artifact.path);
+        const { open: openFile } = await import("node:fs/promises");
+        const file = await openFile(path, "r");
+        try {
+          const size = (await file.stat()).size;
+          const data = Buffer.alloc(16000);
+          const { bytesRead } = await file.read(
+            data,
+            0,
+            data.length,
+            validated.offset,
+          );
+          result = {
+            name: artifact.name,
+            data: data.subarray(0, bytesRead).toString("base64"),
+            offset: validated.offset,
+            nextOffset: validated.offset + bytesRead,
+            bytes: size,
+            done: validated.offset + bytesRead >= size,
+          };
+        } finally {
+          await file.close();
+        }
+      } else if (action.startsWith("agent.")) {
+        result = await runAgent({
+          agent: agents.find((agent) => agent.id === validated.agent),
+          input: { ...validated, synthetic: action === "agent.demo" },
+          taskId: id,
+          directory,
+          workspace: config.workspace,
+          publicTest,
+          signal: abort.signal,
+          modelCall: (request, signal) => models.request(request, id, signal),
+          progress: (event) => {
+            void publish("progress", event, id).catch(() => {});
+          },
+        });
+      } else if (action.startsWith("custom.")) {
+        const capability = capabilities.actions.find(
+          (item) => item.name === action,
+        );
+        const run = await runProcess(capability.command, capability.args, {
+          cwd: config.workspace,
+          input: JSON.stringify(validated),
+          signal: abort.signal,
+          timeoutSeconds: capability.timeoutSeconds,
+        });
+        if (run.exitCode !== 0)
+          throw new Error(run.stderr || `动作退出码 ${run.exitCode}`);
+        try {
+          result = JSON.parse(run.output);
+        } catch {
+          result = { output: run.output };
+        }
+      } else
+        result = await executeAction(action, validated, {
+          signal: abort.signal,
+          workspace: config.workspace,
+          allowShell: config.allowShell,
+        });
       journal[id] = {
         ...journal[id],
         status:
@@ -316,7 +483,10 @@ export async function startWorker(
       journal[id] = {
         ...journal[id],
         status: abort.signal.aborted
-          ? action === "shell.run" || action === "fs.write"
+          ? action === "shell.run" ||
+            action === "fs.write" ||
+            action.startsWith("custom.") ||
+            action.startsWith("agent.")
             ? "unknown"
             : "cancelled"
           : "failed",
@@ -337,6 +507,11 @@ export async function startWorker(
     try {
       message = open(config.broker, config.workerId, config.key, "down", data);
     } catch {
+      return;
+    }
+    if (message.kind === "model") {
+      if (active.has(message.taskId))
+        void models.receive(message.payload, message.taskId);
       return;
     }
     if (message.kind === "cancel") {
@@ -405,6 +580,7 @@ export async function startWorker(
       clearInterval(timer);
       for (const abort of active.values()) abort.abort();
       await Promise.allSettled([...jobs]);
+      models.close();
       await client.endAsync(true);
       await chain;
     },

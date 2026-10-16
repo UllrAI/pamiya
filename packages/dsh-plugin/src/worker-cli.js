@@ -5,6 +5,7 @@ import { readFile, mkdir, open, unlink } from "node:fs/promises";
 import { z } from "zod";
 import { startWorker, atomicJson, loadJson } from "./worker.js";
 import { brokerSchema, errorText } from "./protocol.js";
+import { localTransport } from "./local-transport.js";
 
 export const invitationSchema = z
   .object({
@@ -37,6 +38,7 @@ export async function main(argv = process.argv.slice(2)) {
       workspace: { type: "string" },
       "allow-shell": { type: "boolean" },
       help: { type: "boolean" },
+      "managed-local": { type: "boolean" },
     },
   });
   if (values.help || !positionals.length) {
@@ -69,7 +71,7 @@ export async function main(argv = process.argv.slice(2)) {
       );
     config = {
       ...invite,
-      workspace: resolve(values.workspace ?? directory),
+      workspace: resolve(values.workspace ?? resolve(directory, "workspace")),
       allowShell: Boolean(values["allow-shell"]),
     };
     await mkdir(config.workspace, { recursive: true, mode: 0o700 });
@@ -110,6 +112,7 @@ export async function main(argv = process.argv.slice(2)) {
   try {
     worker = await startWorker(config, {
       directory,
+      transport: values["managed-local"] ? localTransport : undefined,
       onState: (state) =>
         console.log(
           state.status === "connected"
@@ -122,6 +125,10 @@ export async function main(argv = process.argv.slice(2)) {
     console.log(
       `Pamiya · ${config.label}\n节点 ID：${config.workerId}\n${config.broker.publicTest ? "公共测试模式，仅开放演示能力。" : "私有连接。文件能力限制在指定工作目录；命令执行仅在显式允许后开放。"}`,
     );
+    if (values["managed-local"])
+      process.once("disconnect", () => {
+        void stop().then(() => process.exit(0));
+      });
     for (const signal of ["SIGINT", "SIGTERM"])
       process.once(signal, () => {
         void stop().then(() => process.exit(0));

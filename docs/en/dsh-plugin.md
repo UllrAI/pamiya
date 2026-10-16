@@ -13,11 +13,11 @@ flowchart TB
   Agent[DSH Agent / Session] -->|pamiya tools| Host[Pamiya Host plugin]
   Host <--> State[DSH storageDomain + credentials]
   Host <--> Broker[MQTT Broker]
-  Broker <--> Local[Local Worker]
+  Host <-->|Local IPC| Local[Local Worker]
   Broker <--> Remote[Remote Worker]
 ```
 
-The Host and local Worker run on the same computer as separate processes. Every Worker initiates its outbound broker connection; arrows show message flow. DSH supplies the Agent and authoritative conversation history.
+The Host and local Worker run on the same computer as separate processes. Local workers use process IPC; remote workers initiate outbound broker connections; arrows show message flow. DSH supplies the Agent and authoritative conversation history.
 
 ## Install
 
@@ -37,12 +37,14 @@ For a test deployment, `node scripts/install-dsh-plugin.mjs --demo` loads curren
 
 ## First use
 
-1. Open **Pamiya → Connection** in the DSH sidebar. Select the public test connection, load current parameters, then save and connect. Credentials are read from RunMQTT's official public page rather than hardcoded in the repository.
-2. The local Worker joins automatically after connecting. DSH starts it with its own Node-compatible runtime; no separate terminal or pairing is needed. A stopped local Worker remains stopped until you start it.
-3. Once Ready, check the connection or try echo, text statistics and a cancellable wait. Status, results and errors come from the real Worker.
-4. Return to your DSH conversation. Ask the Agent to call `pamiya_workers`, then `pamiya_execute` with a worker and action. Model login/API keys remain managed by DSH.
+1. Open **Pamiya → Workers**. The local worker joins automatically without MQTT, a separate terminal or pairing; an intentionally stopped worker stays stopped.
+2. Wait for Ready, check its connection or try a demo. Results and status come from the real worker.
+3. Worker details detect, install and configure DSH, Codex, Claude Code and Pi. Share DSH model/authentication by default, or choose independent settings.
+4. Use `pamiya_workers` to discover capabilities, `pamiya_execute` for actions and `pamiya_delegate` for full agents. Long-task completion returns to the originating conversation.
 
-The public service supports synthetic tests only. It has no availability guarantee and may reset state or rotate credentials. Pamiya disables file and command tools in public mode; encryption does not change the service's allowed use. [RunMQTT parameters and limits](https://runmqtt.com/public-broker)
+Local jobs use IPC. Configure MQTT only for remote computers; public RunMQTT supports synthetic tests only. Credentials are read from the official page instead of hardcoding rotating passwords. Use a private connection for real remote work. [RunMQTT parameters and limits](https://runmqtt.com/public-broker)
+
+See [Agents and custom actions](agent-workers.md) for model sources, onboarding, configuration, continuation, callbacks and artifacts.
 
 ## Add another computer or server
 
@@ -56,11 +58,11 @@ node pamiya-worker.mjs start --id <worker-id>
 
 A remote worker goes offline when its process exits. DSH-managed local workers start with DSH. A remote server can use its own process manager to supervise the same `start` command; no browser-side background scheduler is implied.
 
-Broker addresses/modes are bound to paired workers and require removing them before changing. Credential updates reconnect the Host and managed local workers. Use **Update connection / pair again** for remote workers, stop the old process, then run the new command while retaining the worker identity and execution journal.
+Changing broker addresses, modes or credentials preserves identities and journals; settle in-flight work first. The Host reconnects while local IPC remains separate. Use **Update connection / pair again** for remote workers, stop the old process, then run the new command while retaining the worker identity and execution journal.
 
 ## Conversation execution worker
 
-Above the composer, choose Auto or pin a worker. Each conversation persists its own choice. The Host enforces the selected target for Pamiya execution and rejects conflicting tool IDs. Auto allows explicitly named workers and otherwise prefers this computer. Changes affect new tasks; retries of the same tool call read the original task rather than replaying on a new target. Offline, paused, busy, removed or unsupported workers never silently fall back.
+In the composer’s bottom toolbar, choose Automatic or pin a worker. Each conversation persists its own choice. The Host enforces the selected target for Pamiya execution and rejects conflicting tool IDs. Auto allows explicitly named workers and otherwise prefers this computer. Changes affect new tasks; retries of the same tool call read the original task rather than replaying on a new target. Offline, paused, busy, removed or unsupported workers never silently fall back.
 
 The Host adds the current selection and capabilities to model context, explaining that native DSH tools still run on the Host. This is model guidance, not interception or migration of every native DSH tool. Manage workers opens configuration. Use Auto for multi-worker comparisons. See the [quickstart](quickstart.md).
 
@@ -74,9 +76,9 @@ The Host adds the current selection and capabilities to model context, explainin
 
 ## Files and commands
 
-A private MQTT connection enables `fs.list`, `fs.read` and `fs.write`. Local worker details let you choose an existing folder and explicitly enable commands. Saving restarts the worker; settle unfinished or uncertain tasks first. Add `--workspace` to the remote pairing command to select a directory. Path checks reject traversal and symlink escape; directory-scoped file access is not OS isolation.
+Local IPC or a private MQTT connection enables `fs.list`, `fs.read` and `fs.write`. Local worker details let you choose an existing folder and explicitly enable commands. Saving restarts the worker; settle unfinished or uncertain tasks first. Add `--workspace` to the remote pairing command to select a directory. Path checks reject traversal and symlink escape; directory-scoped file access is not OS isolation.
 
-`shell.run` additionally requires an explicit `--allow-shell` at Worker startup. Commands run as the Worker's user, and the working directory is not a system sandbox. Pair only a trusted Host. Nonzero exits retain output and report failure. Browser automation, desktop control, ESP32 firmware and third-party Agent delegation adapters are not bundled.
+`shell.run` additionally requires an explicit `--allow-shell` at Worker startup. Commands run as the Worker's user, and the working directory is not a system sandbox. Pair only a trusted Host. Nonzero exits retain output and report failure. Four full agent adapters are implemented, using each agent’s native environment. Separate browser engines, desktop control and ESP32 firmware are not bundled.
 
 ## State and recovery
 
@@ -100,11 +102,11 @@ Checking a result only queries the Worker. A human can record an uncertain outco
 This plugin implements a small version-1 contract. The broader [platform protocol proposal](capabilities-and-protocol.md) is not its wire format.
 
 - Topics: `sandbox/pamiya/<namespace-id>/workers/<worker-id>/down` for Host commands and `/up` for Worker events; QoS 1, no retained messages.
-- Plaintext envelope: `v`, unique message `id`, timestamp `at`, `workerId`, `bootId`, `kind`, optional `taskId`, and `payload`. `kind` is `status`, `dispatch`, `accepted`, `result`, `resultAck`, `query` or `cancel`.
+- Plaintext envelope: `v`, unique message `id`, timestamp `at`, `workerId`, `bootId`, `kind`, optional `taskId`, and `payload`. `kind` is `status`, `dispatch`, `accepted`, `result`, `resultAck`, `query`, `cancel`, `progress` or `model`.
 - Encrypted transport envelope: AES-256-GCM `iv`, `tag`, `data` encoded in Base64url; authenticated data is `<namespace>|<workerId>|<up-or-down>`. Messages must belong to the selected Worker and be within 120 seconds of local time. Keep machine clocks synchronized.
 - An Agent Session and DSH `callId` derive the persisted intent key. A Task UUID binds one Worker, boot and Attempt 1. Duplicate dispatches consult the Worker journal; transport message IDs are not business deduplication keys.
 - Dispatch payload: `{action, input, deadline}`. A result carries `{status, result?, error?, bootId?}` and is acknowledged only after Host persistence. Status includes advertised actions and capacity; heartbeats occur every 5 seconds and the Host considers presence stale after 18 seconds.
-- Input is limited to 24 KB. The receiver rejects packets over 96 KB; large results carry a truncated preview while retaining the action outcome. Files are small scoped reads/writes, not an artifact transfer service.
+- Input is limited to 24 KB. The receiver rejects packets over 96 KB; large results carry a truncated preview while retaining the action outcome. Model context is framed over the existing encrypted connection with a 4 MB limit per model request/response. Registered artifacts support chunked reads; see the agent guide.
 - Broker and Worker identities persist across reconnects. The implementation does not introduce renewable leases, fencing, signed grants, automatic replay, or a second scheduler.
 
 The normative implementation is `src/protocol.js`, `src/controller.js` and `src/worker.js` in `packages/dsh-plugin`.

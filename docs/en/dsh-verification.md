@@ -49,3 +49,18 @@ Windows/other desktop process behavior remains pending. Real-model testing used 
 This evidence establishes the current implementation path, not a multi-tenant production platform, OS sandbox or automatic failover.
 
 [Confirmed remote stop](../../packages/dsh-plugin/design/remote-cancel.zh-CN.png).
+
+
+## Agent delegation and local IPC (v0.2.0)
+
+Verified on 2026-10-16 with native DSH 0.2.0-rc.2 and a physical Linux worker:
+
+- The managed local worker starts over IPC. A fresh test instance with MQTT disabled performed an actual file write. Default workspace files are separate from worker configuration and authentication files.
+- Native DSH management UI ran a DSH synthetic job with its default model and received `PAMIYA_AGENT_OK`.
+- The conversation delegated DSH, Codex, Claude Code and Pi to the selected Linux worker using fixed synthetic jobs through public RunMQTT. All four ultimately returned `PAMIYA_AGENT_OK`. Completion callbacks reached the originating conversation and woke its report; jobs ran sequentially on the same worker.
+- Codex’s first real-model attempt exposed tool-name compatibility. Namespaced tools are now mapped to provider-compatible names and restored on return; a new task passed. The original failed task remains in history.
+- Executable versions were checked on both computers: DSH `0.2.0-rc.2`, Codex `0.162.1`, Claude Code `2.1.296`, Pi `1.3.0`.
+- All 23 checks passed, including real first-run/continuation for all four official CLIs, actual file/command tool results returned to the shared model, model framing, UTF-8, cancellation and local files without MQTT. CLI integration uses controlled model responses; physical Linux acceptance separately uses the actual DSH model and public MQTT.
+- RunMQTT credentials were refreshed while retaining both worker identities and journals. No private broker or additional server port was created.
+
+Personal independent third-party logins and Windows hardware were not exercised. No real business files or free-form agent jobs were sent over the public connection. The shared interface currently accepts text and tool calls; proprietary media/hosted tools use independent agent configuration. See the [agent guide](agent-workers.md).

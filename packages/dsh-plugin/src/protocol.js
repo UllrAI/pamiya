@@ -5,6 +5,7 @@ import {
   randomUUID,
 } from "node:crypto";
 import { z } from "zod";
+import { parseCapabilities, validateCustom } from "./capabilities.js";
 
 export const VERSION = 1;
 export const MAX_MESSAGE = 96 * 1024;
@@ -14,6 +15,11 @@ export const demoActions = [
   "demo.wait",
   "text.stats",
   "system.check",
+  "agent.demo",
+  "worker.inspect",
+  "worker.configure",
+  "agent.install",
+  "agent.artifact",
 ];
 export const privateActions = [
   ...demoActions,
@@ -21,6 +27,7 @@ export const privateActions = [
   "fs.read",
   "fs.write",
   "shell.run",
+  "agent.run",
 ];
 export const terminal = new Set([
   "succeeded",
@@ -76,6 +83,8 @@ export const messageSchema = z
       "resultAck",
       "cancel",
       "query",
+      "model",
+      "progress",
     ]),
     taskId: z.string().uuid().optional(),
     payload: z.unknown(),
@@ -172,9 +181,73 @@ export function options(config, clientId) {
 export function errorText(error) {
   return error instanceof Error ? error.message : String(error);
 }
-export function validateInput(action, input, publicTest) {
+export function validateInput(action, input, publicTest, capabilities = []) {
+  if (action.startsWith("custom.") && !publicTest) {
+    const capability = capabilities.find((item) => item.name === action);
+    if (!capability) throw new Error("节点未提供这项能力");
+    return validateCustom(capability.inputSchema, input);
+  }
   const allowed = publicTest ? demoActions : privateActions;
   if (!allowed.includes(action)) throw new Error("此连接或节点未开放这项能力");
+  if (action === "worker.configure") {
+    const capabilities = parseCapabilities(input.capabilities);
+    if (
+      publicTest &&
+      (capabilities.actions.length ||
+        Object.values(capabilities.agents).some(
+          (agent) => agent.command || agent.model || agent.provider,
+        ))
+    )
+      throw new Error(
+        "公共连接只设置 Agent 开关与模型来源；自定义命令需要本地或私有连接",
+      );
+    return { capabilities };
+  }
+  if (action === "agent.install")
+    return z
+      .object({ agent: z.enum(["dsh", "codex", "claude", "pi"]) })
+      .strict()
+      .parse(input);
+  if (action === "agent.artifact")
+    return z
+      .object({
+        taskId: z.string().uuid(),
+        name: z.string().min(1).max(500),
+        offset: z.number().int().min(0).default(0),
+      })
+      .strict()
+      .parse(input);
+  if (action === "agent.run" || action === "agent.demo")
+    return z
+      .object({
+        agent: z.enum(["dsh", "codex", "claude", "pi"]),
+        prompt: z.string().min(1).max(20000).optional(),
+        sessionRef: z.string().uuid().optional(),
+        modelSource: z.enum(["inherit", "independent"]).optional(),
+        timeoutSeconds: z.number().int().min(10).max(3600).default(600),
+        modelRoute: z
+          .object({
+            provider: z.string(),
+            model: z.string(),
+            reasoningEffort: z.string().optional(),
+          })
+          .optional(),
+        synthetic: z.boolean().optional(),
+      })
+      .strict()
+      .superRefine((value, ctx) => {
+        if (action === "agent.run" && !value.prompt)
+          ctx.addIssue({ code: "custom", message: "请填写任务" });
+        if (
+          action === "agent.demo" &&
+          (value.prompt || value.modelSource === "independent")
+        )
+          ctx.addIssue({
+            code: "custom",
+            message: "合成验证使用固定任务与共享模型",
+          });
+      })
+      .parse(input);
   if (action === "demo.echo" || action === "text.stats")
     return z
       .object({ text: z.string().max(12000) })

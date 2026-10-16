@@ -639,57 +639,148 @@
     flex-wrap: wrap;
   }
 }
-.pamiya-target {
-  box-sizing: border-box;
-  width: calc(100% - 2 * var(--dsh-composer-side-clearance, 16px));
-  max-width: var(--dsh-composer-card-max-width, 960px);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 12px 8px;
-  color: var(--dsw-alias-label-secondary, #70737a);
-  font-size: 12px;
-  line-height: 1.5;
-}
-.pamiya-target label {
+/* Match the native permission/model controls in the composer toolbar. */
+.pm-target-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  height: 28px;
   min-width: 0;
-}
-.pamiya-target select {
-  max-width: min(260px, 50vw);
-  padding: 4px 22px 4px 8px;
-  border: 1px solid var(--dsw-alias-border-l2, #dfe1e5);
-  border-radius: 7px;
-  background: var(--dsw-alias-bg-base, #fff);
-  color: var(--dsw-alias-label-primary, #25272b);
-  font: inherit;
-  cursor: pointer;
-}
-.pamiya-target select:focus-visible,
-.pamiya-target button:focus-visible {
-  outline: 2px solid #5c83d6;
-  outline-offset: 2px;
-}
-.pamiya-target button {
-  padding: 4px;
+  max-width: 180px;
+  padding: 0 4px 0 8px;
   border: 0;
+  border-radius: var(--dsw-radius-sm, 6px);
   background: transparent;
-  color: inherit;
-  font: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--dsw-alias-label-secondary, #717781);
+  font: 400 13px/20px var(--dsw-font-family, system-ui, sans-serif);
   cursor: pointer;
 }
-.pamiya-target-error {
-  flex-basis: 100%;
-  color: #b34239;
+.pm-target-trigger:hover:not(:disabled),
+.pm-target-trigger[aria-expanded="true"] {
+  background: var(--dsw-alias-interactive-bg-hover, #f1f2f4);
 }
-@media (max-width: 560px) {
-  .pamiya-target-scope {
+.pm-target-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--dsw-focus-ring-color, #5c83d6);
+}
+.pm-target-trigger:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.pm-target-trigger svg {
+  flex: none;
+}
+.pm-target-trigger-label,
+.pm-target-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pm-target-trigger[data-unavailable="true"] {
+  color: var(--dsw-alias-state-warning-primary, #a47835);
+}
+.pm-target-chevron {
+  color: var(--dsw-alias-label-caption, #969ba3);
+  transition: transform 120ms ease;
+}
+.pm-target-trigger[aria-expanded="true"] .pm-target-chevron {
+  transform: rotate(180deg);
+}
+.pm-target-menu {
+  width: 296px;
+  max-width: calc(100vw - 24px);
+}
+.pm-target-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-block: 3px;
+}
+.pm-target-option small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary, #858b95);
+}
+.pm-target-option-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pm-target-name {
+  flex: 1;
+}
+.pm-target-menu [role="menuitem"]:has(.pm-target-led) > span:first-child {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+.pm-target-led {
+  display: block;
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--dsw-alias-label-tertiary, #999da5);
+}
+.pm-target-led[data-status="ready"] {
+  background: #448776;
+}
+.pm-target-led[data-status="busy"],
+.pm-target-led[data-status="paused"] {
+  background: #b38847;
+}
+.pm-target-led[data-status="pairing"] {
+  background: #7194c6;
+}
+@container (max-width: 580px) {
+  .pm-target-trigger-label {
     display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pm-target-chevron {
+    transition: none;
+  }
+}
+
+.pamiya-panel .pm-agent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--pm-line);
+}
+.pamiya-panel .pm-agent-row > div {
+  flex: 1;
+  min-width: 90px;
+}
+.pamiya-panel .pm-agent-row strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.pamiya-panel .pm-agent-row small {
+  display: block;
+  font-size: 11px;
+  opacity: 0.55;
+  margin-top: 3px;
+}
+.pamiya-panel .pm-agent-row select {
+  width: 155px;
+  font-size: 12px;
+}
+.pamiya-panel .pm-json-editor {
+  min-height: 200px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+}
+@media (max-width: 520px) {
+  .pamiya-panel .pm-agent-row {
+    flex-wrap: wrap;
+  }
+  .pamiya-panel .pm-agent-row > div {
+    flex-basis: 100%;
   }
 }
