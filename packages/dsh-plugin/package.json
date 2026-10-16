@@ -54,5 +54,14 @@
     "prettier": "^3.8.3",
     "react": "18.3.1",
     "react-dom": "18.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UllrAI/pamiya.git",
+    "directory": "packages/dsh-plugin"
+  },
+  "homepage": "https://github.com/UllrAI/pamiya/blob/main/docs/en/quickstart.md",
+  "bugs": {
+    "url": "https://github.com/UllrAI/pamiya/issues"
   }
 }

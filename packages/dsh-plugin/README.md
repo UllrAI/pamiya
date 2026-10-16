@@ -2,6 +2,14 @@
 
 An installable DSH extension with guided MQTT setup, multiple workers and durable remote tool results. Validated with the 0.2.0-rc.2 and 0.2.1-alpha.4 Host compositions. The host conversation, model and session history remain owned by DSH.
 
+Install the prebuilt release through **DSH → Plugins → Add plugin**:
+
+```text
+https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz
+```
+
+Select **Enable now**, then open Pamiya to configure the connection. Desktop UI installation needs no separate Node.js or Git. [User quickstart](https://github.com/UllrAI/pamiya/blob/main/docs/en/quickstart.md) · [简体中文](https://github.com/UllrAI/pamiya/blob/main/docs/zh-CN/quickstart.md) · [Ask DSH to install](https://github.com/UllrAI/pamiya/blob/main/docs/en/install-with-dsh.md).
+
 Build: `npm ci && npm run plugin:build` from the repository root. Package: `npm pack --workspace @pamiya/dsh-plugin --pack-destination artifacts` after creating `artifacts/`.
 
 Install the generated tarball through DSH's plugin manager, then open **Pamiya** in the sidebar. Configure a connection; this computer joins automatically. Download the standalone Worker for another computer. The interface generates its pairing command.

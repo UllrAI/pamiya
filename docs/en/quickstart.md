@@ -1,0 +1,73 @@
+# Getting started with Pamiya
+
+[简体中文](../zh-CN/quickstart.md) · [Ask DSH to install](install-with-dsh.md) · [Full usage guide](dsh-plugin.md)
+
+Pamiya lets DSH work across your computers. Keep using DSH’s conversations, models and account. This computer becomes the first Worker after connecting.
+
+## Before you start
+
+Install and open [DeepSeek Harness](https://www.deepseek.com/harness/). Verified Hosts are Desktop `0.2.0-rc.2` and Web `0.2.1-alpha.4`. **Desktop UI installation needs no Git, source checkout or separate Node.js installation.** Only standalone Workers on other computers require Node.js 22.19 or newer.
+
+The current release is the `v0.1.0` preview on [GitHub Releases](https://github.com/UllrAI/pamiya/releases/tag/v0.1.0). It is not published to npm; use the complete installation URL below.
+
+## 1. Install the plugin
+
+1. Open **Plugins → Add plugin** in DSH’s sidebar. Some versions label this **Install third-party plugin**.
+2. Paste this complete URL into the package/installation field and select **Install**:
+
+```text
+https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz
+```
+
+3. Select **Enable now** when installation finishes. If DSH requests a restart, fully quit and reopen it; closing a window may leave the application running.
+4. **Pamiya** appears in the sidebar once its UI loads.
+
+Prefer the Agent to handle this? Give it the [installation task document](install-with-dsh.md).
+
+## 2. Connect this computer
+
+1. Open **Pamiya → Connection** and choose **RunMQTT public test connection**.
+2. Select **Load current test parameters → Save and connect**. The plugin reads current credentials from the official page without a separate account signup.
+3. Return to **Workers** and wait for **This computer** to become **Ready**. It joins automatically; do not add it again.
+4. Select **Check connection** and look for **Completed** in **Activity**.
+
+The public connection supports synthetic echo, wait, text-statistics and connection tests. Use your own private MQTT service for personal files or commands. Trying Pamiya does not require a separate database or control backend.
+
+## 3. Give your Agent its first task
+
+Send this in a DSH conversation:
+
+> Use Pamiya to list ready workers, check the connection on this computer, and count the text Hello Pamiya. Report the actual results.
+
+Expect the local operating system and Node.js version, plus **12 characters, 1 line and 2 words**. Conversations require DSH’s model login/configuration; Pamiya does not add a separate model account.
+
+## 4. Optional: connect another computer
+
+1. Choose **Add worker → Another computer or server**, name it and create pairing.
+2. Install [Node.js 22.19 or newer](https://nodejs.org/en/download) on that computer and put the downloaded Worker in its Downloads folder.
+3. Choose its operating system in Pamiya, copy the start command and run it in the terminal **on that other computer**. If clipboard access fails, select **Show command for manual copy**.
+4. Wait for the second Worker to become **Ready**, then select **Try multiple workers**.
+
+Do not install another Worker for this computer. Pair each remote computer separately and share its code only with that computer. Closing the terminal or sleeping the computer can take it offline. Long-running servers can use a process manager as described in the [usage guide](dsh-plugin.md).
+
+![Example with two workers; first use needs only this computer](../../packages/dsh-plugin/design/two-workers.en.png)
+
+## Troubleshooting
+
+| Situation | What to do |
+|---|---|
+| No Pamiya sidebar entry | Enable the plugin, then fully quit and reopen DSH. |
+| Installation URL cannot download | Download the `.tgz` from Releases and enter its absolute local path in the same installation field. An npm mirror cannot fix an unreachable GitHub download host. |
+| DSH version incompatibility | Use a compatible Host version. This guide does not require a compatibility exemption. |
+| Public connection fails | Reload current test parameters and save again. Credentials can rotate and the public service can be temporarily unavailable. |
+| Local Worker is stopped | Open its details and select Start local worker. A deliberately stopped Worker does not restart automatically. |
+| Remote Worker keeps waiting | Check the command is running on the intended computer, its Node.js version is supported and pairing has not expired. Reissue expired pairing in worker details. |
+| Conversation has no model | Complete DSH model login/configuration first. The worker UI tests do not require a model. |
+
+Full Desktop acceptance used macOS with a Linux remote Worker. Windows process behavior remains unverified on physical hardware; see the [verification record](dsh-verification.md).
+
+## Updates and disabling
+
+New releases provide a new installation URL. Use DSH’s plugin manager; when it requires removing the installed package first, remove the package and install the new URL without deleting the DSH data directory. Disable Pamiya under **Plugins** to stop its managed local Worker. Stop remote Workers on their own computers.
+
+Source and CLI installation are in the [full guide](dsh-plugin.md). For a Web profile, use `dsh plugin --profile web add <installation-URL-above>` and enable the plugin.

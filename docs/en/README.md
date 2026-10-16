@@ -37,3 +37,5 @@ The data model, Topics, JSON messages, state names, and delivery phases are plat
 Official links support third-party capability statements. The Dot/Codex example illustrates delegation, not OpenAI's internal architecture or transport. MQTT and camera capabilities for ESP32 are proposed extensions, not features claimed for the original iPhone project.
 
 [DSH plugin installation and usage](dsh-plugin.md).
+
+[User quickstart and installation](quickstart.md) · [Installation task for DSH](install-with-dsh.md).

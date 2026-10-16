@@ -8,14 +8,29 @@ Pamiya is a **personal Agent for ongoing work**: express a goal, provide context
 
 ## Install into DSH
 
-The [installation and usage guide](docs/en/dsh-plugin.md) covers connections, the automatic local Worker, remote pairing, worker management, execution records and result reconciliation. Pamiya reuses DSH’s Agent and conversations without a separate control backend, PostgreSQL or plugin marketplace.
+[Self-service quickstart](docs/en/quickstart.md) · [Give this document to DSH](docs/en/install-with-dsh.md) · [All installation options](INSTALL.md)
+
+Open **Plugins → Add plugin** in DSH, paste this URL, install and enable:
+
+```text
+https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz
+```
+
+The prebuilt Desktop plugin needs no Git, source checkout or separate Node.js. Open **Pamiya → Connection** to set up the test connection; this computer joins automatically. [Full usage and implementation guide](docs/en/dsh-plugin.md).
+
+<details>
+<summary>Build and install from source</summary>
+
+From this repository root, with Node.js 22.19 or newer:
 
 ```sh
 npm ci
 node scripts/install-dsh-plugin.mjs --demo
 ```
 
-`--demo` loads the RunMQTT public test connection on first setup and checks the local Worker. Personal files and commands require your own private connection.
+`--demo` explicitly enables first-time public RunMQTT setup and a local connection check. Use a private broker for personal files and commands.
+
+</details>
 
 ![Pamiya in DSH: two real workers](packages/dsh-plugin/design/two-workers.en.png)
 

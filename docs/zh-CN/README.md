@@ -37,3 +37,5 @@ Pamiya 面向长期承担用户目标的 Personal Agent，将控制循环、持�
 第三方技术的具体能力采用相邻的官方来源链接。Dot 与 Codex 的产品关系用于说明委托模型；它不构成对 OpenAI 内部部署或通信协议的判断。ESP32 的摄像头与 MQTT 能力属于目标扩展，不能当作原开源项目已实现的功能。
 
 [DSH 插件安装与使用](dsh-plugin.md)。
+
+[用户上手与安装](quickstart.md) · [交给 DSH 的安装任务](install-with-dsh.md)。

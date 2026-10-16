@@ -2,6 +2,8 @@
 
 [阅读指南](README.md) · [English](../en/dsh-plugin.md)
 
+普通用户先看[上手指南](quickstart.md)，或把[安装任务文档](install-with-dsh.md)交给 DSH；本页包含源码安装、完整运行说明与实现边界。
+
 这是 `packages/dsh-plugin` 的实际实现说明。Pamiya 复用 DSH 的对话、模型、Agent 循环和 Session；插件增加远程工具、配置页、多节点管理与执行记录。`prototype/` 仍是独立的模拟交互原型。
 
 ## 当前实现组合

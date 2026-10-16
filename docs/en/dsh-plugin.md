@@ -2,6 +2,8 @@
 
 [Index](README.md) · [简体中文](../zh-CN/dsh-plugin.md)
 
+Start with the [quickstart](quickstart.md), or give DSH the [installation task](install-with-dsh.md). This page covers source installation, full usage and implementation boundaries.
+
 This documents the implementation in `packages/dsh-plugin`. DSH owns conversation, models, the Agent loop and Sessions. Pamiya adds remote tools, configuration, worker management and execution records. `prototype/` remains a separate simulated interaction prototype.
 
 ## Implemented composition

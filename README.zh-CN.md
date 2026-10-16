@@ -8,14 +8,29 @@ Pamiya 首先是一个**可以持续共事的个人 Agent**：表达目标、提
 
 ## 安装到 DSH
 
-[安装与使用指南](docs/zh-CN/dsh-plugin.md)覆盖连接设置、本机自动加入、远程配对、多节点管理、运行记录与故障核对。插件复用 DSH 的 Agent 和对话，不需要额外部署控制后台、PostgreSQL 或插件市场。
+[用户自助安装](docs/zh-CN/quickstart.md) · [交给 DSH 代装](docs/zh-CN/install-with-dsh.md) · [全部安装入口](INSTALL.md)
+
+在 DSH 中打开 **插件 → 添加插件**，粘贴以下地址，安装并启用：
+
+```text
+https://github.com/UllrAI/pamiya/releases/download/v0.1.0/pamiya-dsh-plugin-0.1.0.tgz
+```
+
+预构建桌面插件不需要 Git、源码或额外安装 Node.js。打开 **Pamiya → 连接设置** 填入测试连接，本机会自动加入。[完整使用与实现说明](docs/zh-CN/dsh-plugin.md)。
+
+<details>
+<summary>从源码构建安装</summary>
+
+在仓库根目录执行，需要 Node.js 22.19 或更新版本：
 
 ```sh
 npm ci
 node scripts/install-dsh-plugin.mjs --demo
 ```
 
-`--demo` 会在首次安装时填入 RunMQTT 公共测试连接，并检查本机节点；个人文件和命令能力仅在自有私有连接中开放。
+`--demo` 显式启用首次 RunMQTT 公共测试配置并检查本机节点；个人文件和命令使用自有私有连接。
+
+</details>
 
 ![DSH 中的 Pamiya：本机与远端真实节点](packages/dsh-plugin/design/two-workers.zh-CN.png)
 
