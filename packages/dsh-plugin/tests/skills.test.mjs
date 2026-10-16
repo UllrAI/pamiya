@@ -525,7 +525,11 @@ test("resuming a known Agent session pins its old Skill snapshot while new sessi
   const resumed = await controller.dispatch({
     workerId,
     action: "agent.run",
-    input: { agent: "dsh", prompt: "Continue", sessionRef: "1b90d8bf-0608-421d-a0e8-875020d7b2ef" },
+    input: {
+      agent: "dsh",
+      prompt: "Continue",
+      sessionRef: "1b90d8bf-0608-421d-a0e8-875020d7b2ef",
+    },
     modelRoute: { provider: "test", model: "test" },
   });
   assert.equal(resumed.input.skills[0].hash, old.hash);
